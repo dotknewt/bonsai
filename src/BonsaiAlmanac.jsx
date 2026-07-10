@@ -96,6 +96,66 @@ function fmtWindow(status) {
   return `${fmtDate(status.start)} – ${fmtDate(status.end)}`;
 }
 
+/* ---------- day-of-year math for overlap detection (non-leap, 365 days) ---------- */
+const YEAR_DAYS = 365;
+
+function doyOf(month, day) {
+  let n = 0;
+  for (let i = 0; i < month - 1; i++) n += DAYS_IN_MONTH[i];
+  return n + (clampDay(month, day) - 1);
+}
+
+function monthDayFromDoy(doy) {
+  let m = 0, d = doy;
+  while (d >= DAYS_IN_MONTH[m]) { d -= DAYS_IN_MONTH[m]; m++; }
+  return { month: m + 1, day: d + 1 };
+}
+
+function angleForDoy(doy) {
+  return (doy / YEAR_DAYS) * 360 - 90;
+}
+
+function fmtDoy(doy) {
+  const { month, day } = monthDayFromDoy(doy);
+  return fmtDate(dateFor(REF_YEAR, month, day));
+}
+
+function doyInRange(doy, r) {
+  return r.start <= r.end ? doy >= r.start && doy <= r.end : doy >= r.start || doy <= r.end;
+}
+
+/* Ranges of the year where windows from at least two *different* species are
+   open at once. Consecutive days are grouped while the set of open species
+   stays the same, so each returned range names exactly who is in it. */
+function overlapRanges(tasks) {
+  const perDay = Array.from({ length: YEAR_DAYS }, () => new Set());
+  tasks.forEach((t) => {
+    const s = doyOf(t.startMonth, t.startDay), e = doyOf(t.endMonth, t.endDay);
+    if (s <= e) for (let d = s; d <= e; d++) perDay[d].add(t.speciesId);
+    else {
+      for (let d = s; d < YEAR_DAYS; d++) perDay[d].add(t.speciesId);
+      for (let d = 0; d <= e; d++) perDay[d].add(t.speciesId);
+    }
+  });
+  const sig = perDay.map((set) => set.size >= 2 ? [...set].sort().join("|") : "");
+  const ranges = [];
+  let start = null;
+  for (let d = 0; d < YEAR_DAYS; d++) {
+    if (!sig[d]) continue;
+    if (d === 0 || sig[d] !== sig[d - 1]) start = d;
+    if (d === YEAR_DAYS - 1 || sig[d + 1] !== sig[d]) ranges.push({ start, end: d, key: sig[d] });
+  }
+  // a range that runs across New Year comes out as two pieces — stitch them
+  if (ranges.length >= 2) {
+    const first = ranges[0], last = ranges[ranges.length - 1];
+    if (first.start === 0 && last.end === YEAR_DAYS - 1 && first.key === last.key) {
+      first.start = last.start;
+      ranges.pop();
+    }
+  }
+  return ranges.map((r) => ({ ...r, speciesIds: r.key.split("|") }));
+}
+
 function daysUntilText(d, from = new Date()) {
   const today = new Date(from); today.setHours(0, 0, 0, 0);
   const diff = Math.round((d - today) / 86400000);
@@ -208,7 +268,8 @@ function assignLanes(items, padding = 6) {
   return items;
 }
 
-function SeasonRing({ tasks, size = 260 }) {
+/* overlays: [{ a1, sweep, label }] — bright arcs marking overlap ranges */
+function SeasonRing({ tasks, overlays = [], size = 260 }) {
   const cx = size / 2, cy = size / 2;
   const r = size * 0.34;
   const rTicks = size * 0.42;
@@ -265,12 +326,18 @@ function SeasonRing({ tasks, size = 260 }) {
           <g key={t.id}>
             <path d={arcPath(cx, cy, rr, startAngle, sweep)} fill="none" stroke={meta.color}
               strokeWidth={4} strokeLinecap="round" opacity={0.85}>
-              <title>{`${t.title} — ${fmtWindow(windowStatus(t))}`}</title>
+              <title>{`${t.speciesName ? `${t.speciesName} — ` : ""}${t.title} — ${fmtWindow(windowStatus(t))}`}</title>
             </path>
             <circle cx={startPt.x} cy={startPt.y} r={3} fill={meta.color} stroke="#1F2A1C" strokeWidth={1} />
           </g>
         );
       })}
+      {overlays.map((o, i) => (
+        <path key={`ov${i}`} d={arcPath(cx, cy, size * 0.385, o.a1, o.sweep)} fill="none"
+          stroke="#EDE6D6" strokeWidth={3} strokeLinecap="round" opacity={0.95}>
+          <title>{o.label}</title>
+        </path>
+      ))}
       <circle cx={cx} cy={cy} r={2} fill="#EDE6D6" />
     </svg>
   );
@@ -307,7 +374,7 @@ export default function BonsaiAlmanac() {
   const [loading, setLoading] = useState(true);
   const [species, setSpecies] = useState([]);
   const [completions, setCompletions] = useState({});
-  const [activeId, setActiveId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [showAddSpecies, setShowAddSpecies] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const [exportPayload, setExportPayload] = useState(null); // { title, text }
@@ -322,7 +389,7 @@ export default function BonsaiAlmanac() {
       const co = await loadJSON("bonsai-completions", {});
       setSpecies(sp);
       setCompletions(co);
-      setActiveId(sp[0]?.id ?? null);
+      setSelectedIds(sp[0] ? [sp[0].id] : []);
       setLoading(false);
     })();
   }, []);
@@ -350,13 +417,21 @@ export default function BonsaiAlmanac() {
     }).slice(0, 10);
   }, [species, completions, year]);
 
-  const active = species.find((s) => s.id === activeId) || null;
+  const selected = species.filter((s) => selectedIds.includes(s.id));
+  const active = selected.length === 1 ? selected[0] : null;
   const activeTasks = active ? [...active.tasks].sort((a, b) => (a.startMonth - b.startMonth) || (a.startDay - b.startDay)) : [];
+
+  const toggleSpecies = (id) => {
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  };
 
   const removeSpecies = (id) => {
     const next = species.filter((s) => s.id !== id);
     persistSpecies(next);
-    if (activeId === id) setActiveId(next[0]?.id ?? null);
+    setSelectedIds((prev) => {
+      const kept = prev.filter((x) => x !== id);
+      return kept.length ? kept : (next[0] ? [next[0].id] : []);
+    });
   };
   const removeTask = (speciesId, taskId) => {
     const next = species.map((s) => s.id === speciesId ? { ...s, tasks: s.tasks.filter((t) => t.id !== taskId) } : s);
@@ -386,7 +461,7 @@ export default function BonsaiAlmanac() {
     });
     const next = [...species, ...additions];
     persistSpecies(next);
-    if (firstId) setActiveId(firstId);
+    if (firstId) setSelectedIds([firstId]);
   };
 
   if (loading) {
@@ -457,20 +532,34 @@ export default function BonsaiAlmanac() {
           )}
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {species.map((s) => (
-            <button key={s.id} onClick={() => setActiveId(s.id)}
-              className="shrink-0 px-3 py-2 rounded-xl text-left transition"
-              style={{ background: activeId === s.id ? "#EDE6D6" : "#26331F", color: activeId === s.id ? "#1F2A1C" : "#EDE6D6", minWidth: 130 }}>
-              <div className="text-[13px] font-medium leading-tight">{s.name}</div>
-              <div className="text-[11px] italic" style={{ opacity: 0.65, fontFamily: "Fraunces, serif" }}>{s.botanicalName}</div>
-            </button>
-          ))}
+          {species.map((s) => {
+            const isSel = selectedIds.includes(s.id);
+            return (
+              <button key={s.id} onClick={() => toggleSpecies(s.id)}
+                className="shrink-0 px-3 py-2 rounded-xl text-left transition"
+                style={{ background: isSel ? "#EDE6D6" : "#26331F", color: isSel ? "#1F2A1C" : "#EDE6D6", minWidth: 130 }}>
+                <div className="text-[13px] font-medium leading-tight">{s.name}</div>
+                <div className="text-[11px] italic" style={{ opacity: 0.65, fontFamily: "Fraunces, serif" }}>{s.botanicalName}</div>
+              </button>
+            );
+          })}
           <button onClick={() => setShowAddSpecies(true)}
             className="shrink-0 px-3 py-2 rounded-xl flex items-center gap-1 text-[13px]" style={{ background: "transparent", border: "1px dashed #4A5540", color: "#A9B29C", minWidth: 100 }}>
             <Plus size={14} /> Add
           </button>
         </div>
+        {species.length > 1 && (
+          <p className="text-[11px] mt-1" style={{ color: "#6E7A64" }}>
+            Tap to select — select several species to see where their care windows overlap.
+          </p>
+        )}
       </div>
+
+      {selected.length === 0 && species.length > 0 && (
+        <p className="px-5 pt-6 text-sm" style={{ color: "#A9B29C" }}>Select a species above to see its calendar.</p>
+      )}
+
+      {selected.length > 1 && <OverlapView speciesList={selected} key={selectedIds.join(",")} />}
 
       {/* active species detail */}
       {active && (
@@ -537,6 +626,113 @@ export default function BonsaiAlmanac() {
       {exportPayload && (
         <ExportModal title={exportPayload.title} text={exportPayload.text} onClose={() => setExportPayload(null)} />
       )}
+    </div>
+  );
+}
+
+/* ---------- overlap / comparison view (2+ species selected) ---------- */
+function OverlapView({ speciesList }) {
+  const [disabledCats, setDisabledCats] = useState([]);
+
+  const allTasks = useMemo(() => speciesList.flatMap((s) =>
+    s.tasks.map((t) => ({ ...t, speciesId: s.id, speciesName: s.name }))
+  ), [speciesList]);
+
+  const presentCats = useMemo(
+    () => Object.keys(CATS).filter((c) => allTasks.some((t) => (CATS[t.category] ? t.category : "other") === c)),
+    [allTasks]
+  );
+  const enabledCats = presentCats.filter((c) => !disabledCats.includes(c));
+  const toggleCat = (c) => setDisabledCats((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
+
+  const visibleTasks = allTasks.filter((t) => enabledCats.includes(CATS[t.category] ? t.category : "other"));
+
+  const overlapsByCat = useMemo(() => enabledCats
+    .map((cat) => ({
+      cat,
+      ranges: overlapRanges(visibleTasks.filter((t) => (CATS[t.category] ? t.category : "other") === cat)),
+    }))
+    .filter((x) => x.ranges.length)
+    .sort((a, b) => a.ranges[0].start - b.ranges[0].start),
+  [enabledCats.join(","), allTasks]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const nameOf = (id) => speciesList.find((s) => s.id === id)?.name || id;
+  const today = new Date();
+  const todayDoy = doyOf(today.getMonth() + 1, today.getDate());
+
+  const overlays = overlapsByCat.flatMap(({ cat, ranges }) => ranges.map((r) => {
+    const spanDays = r.end >= r.start ? r.end - r.start + 1 : YEAR_DAYS - r.start + r.end + 1;
+    return {
+      a1: angleForDoy(r.start),
+      sweep: Math.max((spanDays / YEAR_DAYS) * 360, 2),
+      label: `${(CATS[cat] || CATS.other).label} overlap: ${fmtDoy(r.start)} – ${fmtDoy(r.end)} — ${r.speciesIds.map(nameOf).join(" + ")}`,
+    };
+  }));
+
+  return (
+    <div className="px-5 pt-6">
+      <h3 className="font-display text-[20px]">Where windows overlap</h3>
+      <p className="text-[12px] mt-0.5" style={{ color: "#A9B29C" }}>
+        {speciesList.map((s) => s.name).join(" · ")}
+      </p>
+
+      {/* task-type filter chips */}
+      <div className="flex flex-wrap gap-1.5 mt-3">
+        {presentCats.map((c) => {
+          const meta = CATS[c];
+          const Icon = meta.icon;
+          const on = enabledCats.includes(c);
+          return (
+            <button key={c} onClick={() => toggleCat(c)}
+              className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full font-medium transition"
+              style={{
+                background: on ? meta.color + "33" : "transparent",
+                color: on ? meta.color : "#6E7A64",
+                border: `1px solid ${on ? meta.color : "#3A4830"}`,
+                fontFamily: "IBM Plex Mono, monospace",
+              }}>
+              <Icon size={11} /> {meta.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-4"><SeasonRing tasks={visibleTasks} overlays={overlays} /></div>
+      <p className="text-[11px] -mt-1 text-center" style={{ color: "#6E7A64" }}>
+        Bright outer arcs mark stretches when two or more species share an open window.
+      </p>
+
+      <div className="mt-5 space-y-4">
+        {enabledCats.length === 0 ? (
+          <p className="text-sm" style={{ color: "#A9B29C" }}>Turn on a task type above to compare its timing.</p>
+        ) : overlapsByCat.length === 0 ? (
+          <p className="text-sm" style={{ color: "#A9B29C" }}>
+            No overlapping windows for the selected task types — these species' timings don't coincide.
+          </p>
+        ) : overlapsByCat.map(({ cat, ranges }) => (
+          <div key={cat}>
+            <div className="mb-1.5"><Badge category={cat} /></div>
+            <div className="space-y-1.5">
+              {ranges.map((r, i) => {
+                const openNow = doyInRange(todayDoy, r);
+                return (
+                  <div key={i} className="px-3 py-2 rounded-lg" style={{ background: "#26331F" }}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[12px]" style={{ fontFamily: "IBM Plex Mono, monospace" }}>
+                        {fmtDoy(r.start)} – {fmtDoy(r.end)}
+                      </span>
+                      {openNow && <span className="text-[11px]" style={{ color: "#8FA876", fontFamily: "IBM Plex Mono, monospace" }}>open now</span>}
+                    </div>
+                    <div className="text-[12px] mt-0.5" style={{ color: "#A9B29C" }}>
+                      {r.speciesIds.map(nameOf).join(" + ")}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
