@@ -45,6 +45,10 @@ function defaultSpanDays(category) {
   return (CATS[category] || CATS.other).spanDays;
 }
 
+function catOf(t) {
+  return CATS[t.category] ? t.category : "other";
+}
+
 /* Accepts both the current shape (startMonth/startDay/endMonth/endDay) and the
    legacy single-date shape (month/day). A missing end gets the category's
    default span. */
@@ -416,6 +420,31 @@ function Badge({ category }) {
   );
 }
 
+/* task-type filter chips shared by the single-species and overlap views */
+function CategoryChips({ cats, enabled, onToggle }) {
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-3">
+      {cats.map((c) => {
+        const meta = CATS[c];
+        const Icon = meta.icon;
+        const on = enabled.includes(c);
+        return (
+          <button key={c} onClick={() => onToggle(c)}
+            className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full font-medium transition"
+            style={{
+              background: on ? meta.color + "33" : "transparent",
+              color: on ? meta.color : "#6E7A64",
+              border: `1px solid ${on ? meta.color : "#3A4830"}`,
+              fontFamily: "IBM Plex Mono, monospace",
+            }}>
+            <Icon size={11} /> {meta.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function ConfirmButton({ onConfirm, label = "", icon: Icon = Trash2 }) {
   const [armed, setArmed] = useState(false);
   useEffect(() => { if (armed) { const t = setTimeout(() => setArmed(false), 2500); return () => clearTimeout(t); } }, [armed]);
@@ -436,6 +465,9 @@ export default function BonsaiAlmanac() {
   const [species, setSpecies] = useState([]);
   const [completions, setCompletions] = useState({});
   const [selectedIds, setSelectedIds] = useState([]);
+  // task-type filter — lives here (not in the views) so the choice survives
+  // selecting/unselecting species
+  const [enabledCats, setEnabledCats] = useState([]);
   const [showAddSpecies, setShowAddSpecies] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const [exportPayload, setExportPayload] = useState(null); // { title, text }
@@ -480,10 +512,21 @@ export default function BonsaiAlmanac() {
 
   const selected = species.filter((s) => selectedIds.includes(s.id));
   const active = selected.length === 1 ? selected[0] : null;
-  const activeTasks = active ? [...active.tasks].sort((a, b) => (a.startMonth - b.startMonth) || (a.startDay - b.startDay)) : [];
+
+  // single-species view: chips filter the calendar; with nothing (relevant)
+  // turned on, every task shows
+  const activePresentCats = active ? Object.keys(CATS).filter((c) => active.tasks.some((t) => catOf(t) === c)) : [];
+  const activeFilterCats = enabledCats.filter((c) => activePresentCats.includes(c));
+  const activeVisibleTasks = active
+    ? (activeFilterCats.length ? active.tasks.filter((t) => activeFilterCats.includes(catOf(t))) : active.tasks)
+    : [];
+  const activeTasks = [...activeVisibleTasks].sort((a, b) => (a.startMonth - b.startMonth) || (a.startDay - b.startDay));
 
   const toggleSpecies = (id) => {
     setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  };
+  const toggleCat = (c) => {
+    setEnabledCats((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
   };
 
   const removeSpecies = (id) => {
@@ -620,7 +663,7 @@ export default function BonsaiAlmanac() {
         <p className="px-5 pt-6 text-sm" style={{ color: "#A9B29C" }}>Select a species above to see its calendar.</p>
       )}
 
-      {selected.length > 1 && <OverlapView speciesList={selected} key={selectedIds.join(",")} />}
+      {selected.length > 1 && <OverlapView speciesList={selected} enabledCats={enabledCats} onToggleCat={toggleCat} />}
 
       {/* active species detail */}
       {active && (
@@ -639,7 +682,16 @@ export default function BonsaiAlmanac() {
             </div>
           </div>
 
-          <div className="mt-4"><SeasonRing tasks={active.tasks} /></div>
+          {activePresentCats.length > 1 && (
+            <>
+              <CategoryChips cats={activePresentCats} enabled={enabledCats} onToggle={toggleCat} />
+              <p className="text-[11px] mt-1" style={{ color: "#6E7A64" }}>
+                Tap a task type to filter — with none on, everything shows.
+              </p>
+            </>
+          )}
+
+          <div className="mt-4"><SeasonRing tasks={activeVisibleTasks} /></div>
 
           <div className="mt-6 space-y-2">
             {activeTasks.map((t) => {
@@ -692,26 +744,22 @@ export default function BonsaiAlmanac() {
 }
 
 /* ---------- overlap / comparison view (2+ species selected) ---------- */
-function OverlapView({ speciesList }) {
-  // nothing selected by default — the user picks which task types to compare
-  const [enabledCats, setEnabledCats] = useState([]);
-
+function OverlapView({ speciesList, enabledCats, onToggleCat }) {
   const allTasks = useMemo(() => speciesList.flatMap((s) =>
     s.tasks.map((t) => ({ ...t, speciesId: s.id, speciesName: s.name }))
   ), [speciesList]);
 
   const presentCats = useMemo(
-    () => Object.keys(CATS).filter((c) => allTasks.some((t) => (CATS[t.category] ? t.category : "other") === c)),
+    () => Object.keys(CATS).filter((c) => allTasks.some((t) => catOf(t) === c)),
     [allTasks]
   );
-  const toggleCat = (c) => setEnabledCats((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
 
-  const visibleTasks = allTasks.filter((t) => enabledCats.includes(CATS[t.category] ? t.category : "other"));
+  const visibleTasks = allTasks.filter((t) => enabledCats.includes(catOf(t)));
 
   const overlapsByCat = useMemo(() => enabledCats
     .map((cat) => ({
       cat,
-      ranges: overlapRanges(visibleTasks.filter((t) => (CATS[t.category] ? t.category : "other") === cat)),
+      ranges: overlapRanges(visibleTasks.filter((t) => catOf(t) === cat)),
     }))
     .filter((x) => x.ranges.length)
     .sort((a, b) => a.ranges[0].start - b.ranges[0].start),
@@ -738,25 +786,7 @@ function OverlapView({ speciesList }) {
       </p>
 
       {/* task-type filter chips */}
-      <div className="flex flex-wrap gap-1.5 mt-3">
-        {presentCats.map((c) => {
-          const meta = CATS[c];
-          const Icon = meta.icon;
-          const on = enabledCats.includes(c);
-          return (
-            <button key={c} onClick={() => toggleCat(c)}
-              className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full font-medium transition"
-              style={{
-                background: on ? meta.color + "33" : "transparent",
-                color: on ? meta.color : "#6E7A64",
-                border: `1px solid ${on ? meta.color : "#3A4830"}`,
-                fontFamily: "IBM Plex Mono, monospace",
-              }}>
-              <Icon size={11} /> {meta.label}
-            </button>
-          );
-        })}
-      </div>
+      <CategoryChips cats={presentCats} enabled={enabledCats} onToggle={onToggleCat} />
 
       <div className="mt-4"><SeasonRing tasks={visibleTasks} overlays={overlays} /></div>
       <p className="text-[11px] -mt-1 text-center" style={{ color: "#6E7A64" }}>
