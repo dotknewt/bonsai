@@ -430,6 +430,7 @@ function CategoryChips({ cats, enabled, onToggle }) {
         const on = enabled.includes(c);
         return (
           <button key={c} onClick={() => onToggle(c)}
+            aria-pressed={on}
             className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full font-medium transition"
             style={{
               background: on ? meta.color + "33" : "transparent",
@@ -449,11 +450,11 @@ function ConfirmButton({ onConfirm, label = "", icon: Icon = Trash2 }) {
   const [armed, setArmed] = useState(false);
   useEffect(() => { if (armed) { const t = setTimeout(() => setArmed(false), 2500); return () => clearTimeout(t); } }, [armed]);
   return armed ? (
-    <button onClick={onConfirm} className="text-[11px] px-2 py-1 rounded" style={{ background: "#B4483A", color: "#EDE6D6" }}>
+    <button onClick={onConfirm} className="text-[11px] px-2 py-1 rounded" aria-label={label || "Confirm removal"} style={{ background: "#B4483A", color: "#EDE6D6" }}>
       Remove?
     </button>
   ) : (
-    <button onClick={() => setArmed(true)} className="p-1 rounded hover:bg-white/10 transition" style={{ color: "#A9B29C" }}>
+    <button onClick={() => setArmed(true)} className="p-1 rounded hover:bg-white/10 transition" aria-label={label || "Remove"} title={label || "Remove"} style={{ color: "#A9B29C" }}>
       <Icon size={14} />
     </button>
   );
@@ -597,9 +598,10 @@ export default function BonsaiAlmanac() {
               return (
                 <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ background: "#26331F" }}>
                   <button onClick={() => toggleDone(row.speciesId, row.task.id)}
+                    aria-label={`${row.done ? "Mark incomplete" : "Mark complete"}: ${row.task.title}`}
                     className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition"
                     style={{ border: `1.5px solid ${row.done ? meta.color : "#4A5540"}`, background: row.done ? meta.color : "transparent" }}>
-                    {row.done && <Check size={12} color="#1F2A1C" />}
+                    {row.done && <Check size={12} color="#1F2A1C" aria-hidden="true" />}
                   </button>
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] truncate" style={{ opacity: row.done ? 0.5 : 1, textDecoration: row.done ? "line-through" : "none" }}>{row.task.title}</div>
@@ -640,6 +642,7 @@ export default function BonsaiAlmanac() {
             const isSel = selectedIds.includes(s.id);
             return (
               <button key={s.id} onClick={() => toggleSpecies(s.id)}
+                aria-pressed={isSel}
                 className="shrink-0 px-3 py-2 rounded-xl text-left transition"
                 style={{ background: isSel ? "#EDE6D6" : "#26331F", color: isSel ? "#1F2A1C" : "#EDE6D6", minWidth: 130 }}>
                 <div className="text-[13px] font-medium leading-tight">{s.name}</div>
@@ -648,8 +651,9 @@ export default function BonsaiAlmanac() {
             );
           })}
           <button onClick={() => setShowAddSpecies(true)}
+            aria-label="Add a species"
             className="shrink-0 px-3 py-2 rounded-xl flex items-center gap-1 text-[13px]" style={{ background: "transparent", border: "1px dashed #4A5540", color: "#A9B29C", minWidth: 100 }}>
-            <Plus size={14} /> Add
+            <Plus size={14} aria-hidden="true" /> Add
           </button>
         </div>
         {species.length > 1 && (
@@ -658,6 +662,21 @@ export default function BonsaiAlmanac() {
           </p>
         )}
       </div>
+
+      {species.length === 0 && (
+        <div className="mx-5 mt-8 rounded-2xl px-5 py-7 text-center" style={{ background: "#26331F", border: "1px solid #3A4830" }}>
+          <Sprout className="mx-auto mb-3" size={28} color="#8FA876" aria-hidden="true" />
+          <h3 className="font-display text-[20px]">Your bench is empty</h3>
+          <p className="text-[13px] mt-1.5" style={{ color: "#A9B29C" }}>
+            Add your first bonsai to start planning seasonal care.
+          </p>
+          <button onClick={() => setShowAddSpecies(true)}
+            className="mt-4 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium"
+            style={{ background: "#D9A441", color: "#1F2A1C" }}>
+            <Plus size={14} aria-hidden="true" /> Add your first species
+          </button>
+        </div>
+      )}
 
       {selected.length === 0 && species.length > 0 && (
         <p className="px-5 pt-6 text-sm" style={{ color: "#A9B29C" }}>Select a species above to see its calendar.</p>
@@ -701,9 +720,10 @@ export default function BonsaiAlmanac() {
                 <div key={t.id} className="rounded-lg px-3 py-2.5" style={{ background: "#26331F" }}>
                   <div className="flex items-start gap-3">
                     <button onClick={() => toggleDone(active.id, t.id)}
+                      aria-label={`${done ? "Mark incomplete" : "Mark complete"}: ${t.title}`}
                       className="w-5 h-5 mt-0.5 rounded-full flex items-center justify-center shrink-0 transition"
                       style={{ border: `1.5px solid ${done ? (CATS[t.category] || CATS.other).color : "#4A5540"}`, background: done ? (CATS[t.category] || CATS.other).color : "transparent" }}>
-                      {done && <Check size={12} color="#1F2A1C" />}
+                      {done && <Check size={12} color="#1F2A1C" aria-hidden="true" />}
                     </button>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -724,8 +744,9 @@ export default function BonsaiAlmanac() {
           </div>
 
           <button onClick={() => setShowAddTask(true)}
+            aria-label={`Add a care task for ${active.name}`}
             className="mt-4 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[13px]" style={{ border: "1px dashed #4A5540", color: "#A9B29C" }}>
-            <Plus size={14} /> Add a care task
+            <Plus size={14} aria-hidden="true" /> Add a care task
           </button>
         </div>
       )}
@@ -835,7 +856,7 @@ function ModalShell({ title, onClose, children }) {
       <div className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] overflow-y-auto" style={{ background: "#26331F", color: "#EDE6D6" }}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-[18px]">{title}</h3>
-          <button onClick={onClose} style={{ color: "#A9B29C" }}><X size={18} /></button>
+          <button onClick={onClose} aria-label="Close dialog" title="Close" style={{ color: "#A9B29C" }}><X size={18} aria-hidden="true" /></button>
         </div>
         {children}
       </div>
