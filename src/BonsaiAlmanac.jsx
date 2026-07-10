@@ -57,8 +57,44 @@ function daysUntilText(d, from = new Date()) {
   return fmtDate(d);
 }
 
-/* ---------- seed data (Fagus sylvatica, Norwegian-shifted timing) ---------- */
+/* ---------- seed data (Norwegian-shifted timing) ---------- */
 const SEED_SPECIES = [{
+  id: "juniper-juniperus-procumbens",
+  name: "Japanese Garden Juniper",
+  botanicalName: "Juniperus procumbens",
+  // Care windows adapted from the Bonsai4me Juniperus species guide, shifted ~3-4 weeks for Norway.
+  tasks: [
+    { id: "j1", title: "Spring health check", month: 4, day: 20, category: "other", description: "Junipers wake late, and a dead one can hold normal foliage colour for weeks after the roots have died. Confirm new growth is actually extending before doing any real work. Full sun all day suits procumbens' needle foliage." },
+    { id: "j2", title: "Start high-nitrogen feeding", month: 5, day: 10, category: "feed", description: "Feed fortnightly with a high-nitrogen fertiliser from the start of growth until midsummer. An occasional acidic feed helps, especially in hard-water areas." },
+    { id: "j3", title: "Pinch & scissor-prune new shoots", month: 6, day: 1, category: "prune", description: "Through the growing season, pinch only soft new tips; scissor-cut anything that has hardened — pinching hardened growth tears the bark away. Never remove more than about 25% of the foliage at once." },
+    { id: "j4", title: "Wiring — growth is supple", month: 6, day: 15, category: "wire", description: "Juniper wood is extremely flexible and can be wired year-round, but wire takes 3 months to a year to set, so check often for biting as branches thicken." },
+    { id: "j5", title: "Pest watch", month: 7, day: 10, category: "pest", description: "Dense pads shelter spider mites and scale. Part the foliage and check the interior — mite damage shows as dull, grey-green needles." },
+    { id: "j6", title: "Switch to balanced feed", month: 7, day: 15, category: "feed", description: "From midsummer, swap the high-nitrogen fertiliser for a balanced feed, still fortnightly, and continue until winter." },
+    { id: "j7", title: "Thin the foliage pads", month: 8, day: 1, category: "prune", description: "Repeated pruning makes pads dense enough to block light and air from interior and lower branches, weakening them until they die back. Thin now so inner shoots stay strong." },
+    { id: "j8", title: "Repot (every 3–5 years)", month: 8, day: 20, category: "repot", description: "Junipers repot best in late summer/early autumn, not spring. An inorganic clay-based soil is essential. Never bare-root — replace no more than a third of the soil in any one repotting." },
+    { id: "j9", title: "Autumn watering check", month: 9, day: 15, category: "other", description: "Junipers in old, compacted organic soil rot easily if overwatered. As growth slows and autumn rain sets in, make sure the pot drains freely and ease off the can." },
+    { id: "j10", title: "Structural wiring window", month: 10, day: 1, category: "wire", description: "The whole tree will need 100% wiring at least once in its life, and autumn is a calm window for it. No heavy bends in trunks or branches once temperatures reach 0°C or below." },
+    { id: "j11", title: "Winter protection below −10°C", month: 11, day: 1, category: "other", description: "Fully hardy outdoors, but shelter it (cold frame or unheated shed) when frosts drop below −10°C. Never overwinter indoors — low light, dry air and lost dormancy will kill it." },
+  ],
+}, {
+  id: "mugo-pinus-mugo",
+  name: "Mugo Pine",
+  botanicalName: "Pinus mugo",
+  // Care windows adapted from the Bonsai4me "Pinus mugo Indepth" article and Pinus species guide, shifted ~3-4 weeks for Norway.
+  tasks: [
+    { id: "m1", title: "Full-sun position for the season", month: 4, day: 20, category: "other", description: "Give maximum light from snowmelt onwards — insufficient sunlight means extended needles and dieback of shaded branches. Plenty of water too, but the soil must drain fast; roots should never sit in water." },
+    { id: "m2", title: "Start strong slow-release feeding", month: 5, day: 10, category: "feed", description: "Feed strongly with a slow-release fertiliser from spring through to late summer — mugos take heavy feeding and repay it with vigour." },
+    { id: "m3", title: "Pinch the strongest candles", month: 5, day: 25, category: "prune", description: "When candles reach 2.5–4 cm, gently break away the top of any that are noticeably more vigorous than the rest to balance energy across the tree." },
+    { id: "m4", title: "Bud selection — reduce to pairs", month: 6, day: 5, category: "prune", description: "Wherever buds cluster, reduce to 2 so each branch forks into two sub-branches. Remove excess buds as and when they appear through spring and summer." },
+    { id: "m5", title: "Pest & needle-cast check", month: 6, day: 20, category: "pest", description: "Watch for aphids and pine sawfly larvae on new growth. Needle discolouration in spring or summer can mean fungal needle cast — autumn yellowing of the oldest needles is just natural shedding." },
+    { id: "m6", title: "Cut back the first flush", month: 7, day: 1, category: "prune", description: "Cut the first flush back to 1–4 sets of new needles (by branch strength) to force a compact second flush this season. Never remove more than 50% of top growth in one year, and keep old needles wherever you want backbuds — mugos backbud where needles remain, not where they've been removed." },
+    { id: "m7", title: "Repot window — summer, not spring", month: 7, day: 20, category: "repot", description: "Mugos react far better to summer repotting than the spring timing used for other pines: do it after the first flush is cut back. Pick old, poor-draining soil out by hand (never wash the roots); on weaker trees remove only half the compacted soil. In heat above ~27°C, shade for two weeks and mist the foliage twice daily." },
+    { id: "m8", title: "Final feed of the season", month: 8, day: 25, category: "feed", description: "Feeding runs to late summer, then stops so the second flush can harden off before the Norwegian winter." },
+    { id: "m9", title: "Styling & wiring window", month: 9, day: 1, category: "wire", description: "Late summer/early autumn is the main window to style and wire mugo pines. One insult per year: after repotting, styling or drastic pruning, wait 12 months before the next major work — a tree styled now can't be repotted next summer." },
+    { id: "m10", title: "Heavy pruning / trunk chops", month: 10, day: 1, category: "prune", description: "Autumn is the time for trunk chops and heavy branch removal on pines. Leave a short stump and seal the wound. This counts as the year's one insult." },
+    { id: "m11", title: "Winter — hardiness check", month: 10, day: 20, category: "other", description: "A mountain native, mugo shrugs off severe cold, but shield it from freezing winds while the rootball is frozen. Yellowing oldest needles now is natural shedding, not trouble." },
+  ],
+}, {
   id: "beech-fagus-sylvatica",
   name: "European Beech",
   botanicalName: "Fagus sylvatica",
