@@ -665,7 +665,9 @@ export default function BonsaiAlmanac() {
 
       {species.length === 0 && (
         <div className="mx-5 mt-8 rounded-2xl px-5 py-7 text-center" style={{ background: "#26331F", border: "1px solid #3A4830" }}>
-          <Sprout className="mx-auto mb-3" size={28} color="#8FA876" aria-hidden="true" />
+          <span aria-hidden="true">
+            <Sprout className="mx-auto mb-3" size={28} color="#8FA876" />
+          </span>
           <h3 className="font-display text-[20px]">Your bench is empty</h3>
           <p className="text-[13px] mt-1.5" style={{ color: "#A9B29C" }}>
             Add your first bonsai to start planning seasonal care.
