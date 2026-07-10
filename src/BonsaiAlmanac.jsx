@@ -57,8 +57,26 @@ function daysUntilText(d, from = new Date()) {
   return fmtDate(d);
 }
 
-/* ---------- seed data (Fagus sylvatica, Norwegian-shifted timing) ---------- */
+/* ---------- seed data (Norwegian-shifted timing) ---------- */
 const SEED_SPECIES = [{
+  id: "juniper-juniperus-procumbens",
+  name: "Japanese Garden Juniper",
+  botanicalName: "Juniperus procumbens",
+  // Care windows adapted from the Bonsai4me Juniperus species guide, shifted ~3-4 weeks for Norway.
+  tasks: [
+    { id: "j1", title: "Spring health check", month: 4, day: 20, category: "other", description: "Junipers wake late, and a dead one can hold normal foliage colour for weeks after the roots have died. Confirm new growth is actually extending before doing any real work. Full sun all day suits procumbens' needle foliage." },
+    { id: "j2", title: "Start high-nitrogen feeding", month: 5, day: 10, category: "feed", description: "Feed fortnightly with a high-nitrogen fertiliser from the start of growth until midsummer. An occasional acidic feed helps, especially in hard-water areas." },
+    { id: "j3", title: "Pinch & scissor-prune new shoots", month: 6, day: 1, category: "prune", description: "Through the growing season, pinch only soft new tips; scissor-cut anything that has hardened — pinching hardened growth tears the bark away. Never remove more than about 25% of the foliage at once." },
+    { id: "j4", title: "Wiring — growth is supple", month: 6, day: 15, category: "wire", description: "Juniper wood is extremely flexible and can be wired year-round, but wire takes 3 months to a year to set, so check often for biting as branches thicken." },
+    { id: "j5", title: "Pest watch", month: 7, day: 10, category: "pest", description: "Dense pads shelter spider mites and scale. Part the foliage and check the interior — mite damage shows as dull, grey-green needles." },
+    { id: "j6", title: "Switch to balanced feed", month: 7, day: 15, category: "feed", description: "From midsummer, swap the high-nitrogen fertiliser for a balanced feed, still fortnightly, and continue until winter." },
+    { id: "j7", title: "Thin the foliage pads", month: 8, day: 1, category: "prune", description: "Repeated pruning makes pads dense enough to block light and air from interior and lower branches, weakening them until they die back. Thin now so inner shoots stay strong." },
+    { id: "j8", title: "Repot (every 3–5 years)", month: 8, day: 20, category: "repot", description: "Junipers repot best in late summer/early autumn, not spring. An inorganic clay-based soil is essential. Never bare-root — replace no more than a third of the soil in any one repotting." },
+    { id: "j9", title: "Autumn watering check", month: 9, day: 15, category: "other", description: "Junipers in old, compacted organic soil rot easily if overwatered. As growth slows and autumn rain sets in, make sure the pot drains freely and ease off the can." },
+    { id: "j10", title: "Structural wiring window", month: 10, day: 1, category: "wire", description: "The whole tree will need 100% wiring at least once in its life, and autumn is a calm window for it. No heavy bends in trunks or branches once temperatures reach 0°C or below." },
+    { id: "j11", title: "Winter protection below −10°C", month: 11, day: 1, category: "other", description: "Fully hardy outdoors, but shelter it (cold frame or unheated shed) when frosts drop below −10°C. Never overwinter indoors — low light, dry air and lost dormancy will kill it." },
+  ],
+}, {
   id: "beech-fagus-sylvatica",
   name: "European Beech",
   botanicalName: "Fagus sylvatica",
