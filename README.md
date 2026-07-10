@@ -51,13 +51,21 @@ Add species dialog) documents this too.
 
 ### Task object
 
+Each task is a care *window* — a span of weeks to months, not a single day.
+
 | key           | value                                                                        |
 | ------------- | ---------------------------------------------------------------------------- |
 | `title`       | string — required. What to do, e.g. `"Repot"`                                |
-| `month`       | number 1–12 — required. 1 = January                                          |
-| `day`         | number 1–31 — required. Day of the month                                     |
+| `startMonth`  | number 1–12 — required. Month the window opens. 1 = January                  |
+| `startDay`    | number 1–31 — required. Day the window opens                                 |
+| `endMonth`    | number 1–12 — optional. Month the window closes; may wrap the year (Nov → Feb) |
+| `endDay`      | number 1–31 — optional. Day the window closes. If omitted, a typical span for the category is used (~3 weeks for repotting, ~1 month for pruning, ~2 months for wiring, ~3 months for feeding/pest watch) |
 | `category`    | one of `repot`, `feed`, `prune`, `wire`, `propagate`, `seed`, `pest`, `other` (anything else becomes `other`) |
 | `description` | string — optional. Longer notes shown under the task                         |
+
+Legacy single-date tasks (`month` / `day`) are still accepted on import and are
+migrated automatically: the date becomes the window's start, and the end
+defaults to the category's typical span.
 
 ### Accepted paste shapes
 
@@ -65,8 +73,8 @@ Add species dialog) documents this too.
 
 ```json
 [
-  { "title": "Repot", "month": 4, "day": 15, "category": "repot", "description": "Repot as buds swell." },
-  { "title": "Start feeding", "month": 5, "day": 10, "category": "feed" }
+  { "title": "Repot", "startMonth": 4, "startDay": 15, "endMonth": 5, "endDay": 5, "category": "repot", "description": "Repot as buds swell." },
+  { "title": "Feeding season", "startMonth": 5, "startDay": 10, "endMonth": 8, "endDay": 20, "category": "feed" }
 ]
 ```
 
@@ -77,7 +85,7 @@ Add species dialog) documents this too.
   "name": "Japanese Maple",
   "botanicalName": "Acer palmatum",
   "tasks": [
-    { "title": "Prune to shape", "month": 6, "day": 1, "category": "prune" }
+    { "title": "Prune to shape", "startMonth": 6, "startDay": 1, "endMonth": 7, "endDay": 1, "category": "prune" }
   ]
 }
 ```

@@ -11,23 +11,29 @@ const SPECIES_FIELDS = [
 
 const TASK_FIELDS = [
   { key: "title", value: "string — required. What to do, e.g. \"Repot\"." },
-  { key: "month", value: "number 1–12 — required. 1 = January." },
-  { key: "day", value: "number 1–31 — required. Day of the month." },
+  { key: "startMonth", value: "number 1–12 — required. Month the care window opens. 1 = January." },
+  { key: "startDay", value: "number 1–31 — required. Day the window opens." },
+  { key: "endMonth", value: "number 1–12 — optional. Month the window closes. Windows may wrap the year (e.g. Nov → Feb)." },
+  { key: "endDay", value: "number 1–31 — optional. Day the window closes. If the end is omitted, a typical span for the category is used (e.g. ~3 weeks for repotting, ~2 months for wiring, ~3 months for feeding)." },
   { key: "category", value: "one of: repot, feed, prune, wire, propagate, seed, pest, other. Anything else becomes \"other\"." },
   { key: "description", value: "string — optional. Longer notes shown under the task." },
+  { key: "month / day", value: "legacy single-date fields — still accepted; treated as the window's start." },
 ];
 
 const EXAMPLE_TASKS = `[
-  { "title": "Repot", "month": 4, "day": 15, "category": "repot",
+  { "title": "Repot", "startMonth": 4, "startDay": 15,
+    "endMonth": 5, "endDay": 5, "category": "repot",
     "description": "Repot as buds swell." },
-  { "title": "Start feeding", "month": 5, "day": 10, "category": "feed" }
+  { "title": "Feeding season", "startMonth": 5, "startDay": 10,
+    "endMonth": 8, "endDay": 20, "category": "feed" }
 ]`;
 
 const EXAMPLE_SPECIES = `{
   "name": "Japanese Maple",
   "botanicalName": "Acer palmatum",
   "tasks": [
-    { "title": "Prune to shape", "month": 6, "day": 1, "category": "prune" }
+    { "title": "Prune to shape", "startMonth": 6, "startDay": 1,
+      "endMonth": 7, "endDay": 1, "category": "prune" }
   ]
 }`;
 
@@ -86,6 +92,7 @@ export default function FormatGuide({ onClose }) {
         <p className="text-[12px] mb-4" style={{ color: "#A9B29C" }}>
           The import box accepts JSON in three shapes: a bare task list (uses the name you typed above),
           a single species object, or a whole collection — the same formats "Export" produces.
+          Each task is a care <em>window</em> spanning weeks to months, not a single day.
         </p>
 
         <FieldTable title="Species object" rows={SPECIES_FIELDS} />

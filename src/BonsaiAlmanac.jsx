@@ -7,19 +7,21 @@ import {
 import FormatGuide from "./FormatGuide.jsx";
 
 /* ---------- theme tokens ---------- */
+/* spanDays = default window length when a task is given without an end date */
 const CATS = {
-  repot:     { label: "Repot",      color: "#C97A3D", icon: RotateCcw },
-  feed:      { label: "Feed",       color: "#8FA876", icon: Droplet },
-  prune:     { label: "Prune",      color: "#D9A441", icon: Scissors },
-  wire:      { label: "Wire",       color: "#C1552E", icon: Link2 },
-  propagate: { label: "Propagate",  color: "#5B8C7B", icon: Sprout },
-  seed:      { label: "Seed",       color: "#B08968", icon: Leaf },
-  pest:      { label: "Pest watch", color: "#B4483A", icon: Bug },
-  other:     { label: "General",    color: "#8A9086", icon: CalendarDays },
+  repot:     { label: "Repot",      color: "#C97A3D", icon: RotateCcw,    spanDays: 21 },
+  feed:      { label: "Feed",       color: "#8FA876", icon: Droplet,      spanDays: 90 },
+  prune:     { label: "Prune",      color: "#D9A441", icon: Scissors,     spanDays: 30 },
+  wire:      { label: "Wire",       color: "#C1552E", icon: Link2,        spanDays: 60 },
+  propagate: { label: "Propagate",  color: "#5B8C7B", icon: Sprout,       spanDays: 30 },
+  seed:      { label: "Seed",       color: "#B08968", icon: Leaf,         spanDays: 21 },
+  pest:      { label: "Pest watch", color: "#B4483A", icon: Bug,          spanDays: 90 },
+  other:     { label: "General",    color: "#8A9086", icon: CalendarDays, spanDays: 14 },
 };
 
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 const MONTH_LETTERS = ["J","F","M","A","M","J","J","A","S","O","N","D"];
+const REF_YEAR = 2001; // non-leap year used for pure month/day arithmetic
 
 function seasonLabel(month) {
   return ({
@@ -29,23 +31,69 @@ function seasonLabel(month) {
   })[month];
 }
 
+function clampDay(month, day) {
+  return Math.max(1, Math.min(day, DAYS_IN_MONTH[month - 1]));
+}
+
+function dateFor(year, month, day) {
+  const d = new Date(year, month - 1, clampDay(month, day));
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function defaultSpanDays(category) {
+  return (CATS[category] || CATS.other).spanDays;
+}
+
+/* Accepts both the current shape (startMonth/startDay/endMonth/endDay) and the
+   legacy single-date shape (month/day). A missing end gets the category's
+   default span. */
+function normalizeTask(t) {
+  const startMonth = t.startMonth ?? t.month ?? 1;
+  const startDay = clampDay(startMonth, t.startDay ?? t.day ?? 1);
+  let { endMonth, endDay } = t;
+  if (endMonth == null || endDay == null) {
+    const end = dateFor(REF_YEAR, startMonth, startDay);
+    end.setDate(end.getDate() + defaultSpanDays(t.category));
+    endMonth = end.getMonth() + 1;
+    endDay = end.getDate();
+  } else {
+    endDay = clampDay(endMonth, endDay);
+  }
+  const { month, day, ...rest } = t;
+  return { ...rest, startMonth, startDay, endMonth, endDay };
+}
+
+/* Where does today fall relative to a task's yearly window? Windows may wrap
+   the year boundary (e.g. Nov 15 – Feb 1). */
+function windowStatus(t, from = new Date()) {
+  const today = new Date(from); today.setHours(0, 0, 0, 0);
+  const y = today.getFullYear();
+  for (const sy of [y - 1, y]) {
+    const start = dateFor(sy, t.startMonth, t.startDay);
+    let end = dateFor(sy, t.endMonth, t.endDay);
+    if (end < start) end = dateFor(sy + 1, t.endMonth, t.endDay);
+    if (today >= start && today <= end) return { open: true, start, end };
+  }
+  let start = dateFor(y, t.startMonth, t.startDay);
+  if (start < today) start = dateFor(y + 1, t.startMonth, t.startDay);
+  let end = dateFor(start.getFullYear(), t.endMonth, t.endDay);
+  if (end < start) end = dateFor(start.getFullYear() + 1, t.endMonth, t.endDay);
+  return { open: false, start, end };
+}
+
 function angleForMonthDay(month, day) {
   const dim = DAYS_IN_MONTH[month - 1];
   const frac = (month - 1) / 12 + ((day - 1) / Math.max(dim, 1)) / 12;
   return frac * 360 - 90;
 }
 
-function nextOccurrence(month, day, from = new Date()) {
-  const y = from.getFullYear();
-  let candidate = new Date(y, month - 1, Math.min(day, DAYS_IN_MONTH[month - 1]));
-  candidate.setHours(0, 0, 0, 0);
-  const today = new Date(from); today.setHours(0, 0, 0, 0);
-  if (candidate < today) candidate = new Date(y + 1, month - 1, Math.min(day, DAYS_IN_MONTH[month - 1]));
-  return candidate;
-}
-
 function fmtDate(d) {
   return d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
+
+function fmtWindow(status) {
+  return `${fmtDate(status.start)} – ${fmtDate(status.end)}`;
 }
 
 function daysUntilText(d, from = new Date()) {
@@ -99,18 +147,18 @@ const SEED_SPECIES = [{
   name: "European Beech",
   botanicalName: "Fagus sylvatica",
   tasks: [
-    { id: "t1", title: "Repot (every 2 years)", month: 5, day: 1, category: "repot", description: "Repot in a basic soil mix as buds swell. Norwegian springs run 3–4 weeks behind the UK, so go by bud movement, not the date." },
-    { id: "t2", title: "Start feeding — trees still developing", month: 5, day: 10, category: "feed", description: "If trunk or branch structure is still being built, feed as soon as leaves unfurl." },
-    { id: "t3", title: "Begin fortnightly feeding — refined trees", month: 6, day: 5, category: "feed", description: "Refined trees get a 3–4 week feeding hold after leaf-out to keep spring growth fine. Start fortnightly feeding now." },
-    { id: "t4", title: "Prune to bud", month: 6, day: 15, category: "prune", description: "Once spring growth has fully extended, cut back to a bud facing the direction you want new growth to take." },
-    { id: "t5", title: "Wiring — check often", month: 6, day: 16, category: "wire", description: "Branches thicken fast now. Beech bark is smooth and scars easily, so inspect wire every few days." },
-    { id: "t6", title: "Air-layering window", month: 7, day: 5, category: "propagate", description: "Take air-layers once this year's spring growth has hardened off." },
-    { id: "t7", title: "Optional hard pruning", month: 7, day: 6, category: "prune", description: "Midsummer is an alternative to late-winter hard pruning — wounds heal fastest now, so it's also the best time to remove large branches." },
-    { id: "t8", title: "Pest & disease check", month: 7, day: 20, category: "pest", description: "Watch for aphids, whitefly, bark scale and powdery mildew through the growing season." },
-    { id: "t9", title: "Final feed of the season", month: 8, day: 20, category: "feed", description: "Stop feeding around now so growth can harden off before autumn." },
-    { id: "t10", title: "Autumn colour & seed sowing", month: 9, day: 25, category: "seed", description: "Foliage turns yellow to orange-brown and often stays on through winter. Sow fresh beechmast outdoors now for natural stratification." },
-    { id: "t11", title: "Start winter seed stratification", month: 11, day: 15, category: "seed", description: "If seed wasn't sown outdoors in autumn, begin cold-stratifying it indoors for a spring sowing." },
-    { id: "t12", title: "Late-winter hard pruning window", month: 2, day: 15, category: "prune", description: "The alternative to midsummer hard pruning — do this before spring growth resumes." },
+    { id: "t1", title: "Repot (every 2 years)", startMonth: 5, startDay: 1, endMonth: 5, endDay: 21, category: "repot", description: "Repot in a basic soil mix as buds swell. Norwegian springs run 3–4 weeks behind the UK, so go by bud movement, not the date." },
+    { id: "t2", title: "Feed — trees still developing", startMonth: 5, startDay: 10, endMonth: 8, endDay: 20, category: "feed", description: "If trunk or branch structure is still being built, feed from the moment leaves unfurl right through the growing season." },
+    { id: "t3", title: "Fortnightly feeding — refined trees", startMonth: 6, startDay: 5, endMonth: 8, endDay: 20, category: "feed", description: "Refined trees get a 3–4 week feeding hold after leaf-out to keep spring growth fine, then feed fortnightly until late summer." },
+    { id: "t4", title: "Prune to bud", startMonth: 6, startDay: 15, endMonth: 7, endDay: 15, category: "prune", description: "Once spring growth has fully extended, cut back to a bud facing the direction you want new growth to take." },
+    { id: "t5", title: "Wiring — check often", startMonth: 6, startDay: 16, endMonth: 9, endDay: 15, category: "wire", description: "Branches thicken fast now. Beech bark is smooth and scars easily, so inspect wire every few days while it's on." },
+    { id: "t6", title: "Air-layering window", startMonth: 7, startDay: 5, endMonth: 8, endDay: 5, category: "propagate", description: "Take air-layers once this year's spring growth has hardened off." },
+    { id: "t7", title: "Optional hard pruning", startMonth: 7, startDay: 6, endMonth: 8, endDay: 1, category: "prune", description: "Midsummer is an alternative to late-winter hard pruning — wounds heal fastest now, so it's also the best time to remove large branches." },
+    { id: "t8", title: "Pest & disease watch", startMonth: 6, startDay: 1, endMonth: 9, endDay: 15, category: "pest", description: "Watch for aphids, whitefly, bark scale and powdery mildew through the growing season." },
+    { id: "t9", title: "Final feeds of the season", startMonth: 8, startDay: 20, endMonth: 9, endDay: 10, category: "feed", description: "Taper feeding off through this window so growth can harden before autumn." },
+    { id: "t10", title: "Autumn colour & seed sowing", startMonth: 9, startDay: 25, endMonth: 10, endDay: 31, category: "seed", description: "Foliage turns yellow to orange-brown and often stays on through winter. Sow fresh beechmast outdoors now for natural stratification." },
+    { id: "t11", title: "Start winter seed stratification", startMonth: 11, startDay: 15, endMonth: 12, endDay: 31, category: "seed", description: "If seed wasn't sown outdoors in autumn, begin cold-stratifying it indoors for a spring sowing." },
+    { id: "t12", title: "Late-winter hard pruning window", startMonth: 2, startDay: 15, endMonth: 3, endDay: 20, category: "prune", description: "The alternative to midsummer hard pruning — do this before spring growth resumes." },
   ],
 }];
 
@@ -132,10 +180,37 @@ async function saveJSON(key, value) {
 }
 
 /* ---------- Season Ring (signature visual) ---------- */
+function arcPath(cx, cy, r, startAngle, sweep) {
+  const rad = (a) => (a * Math.PI) / 180;
+  const p1 = { x: cx + r * Math.cos(rad(startAngle)), y: cy + r * Math.sin(rad(startAngle)) };
+  const p2 = { x: cx + r * Math.cos(rad(startAngle + sweep)), y: cy + r * Math.sin(rad(startAngle + sweep)) };
+  const large = sweep > 180 ? 1 : 0;
+  return `M ${p1.x} ${p1.y} A ${r} ${r} 0 ${large} 1 ${p2.x} ${p2.y}`;
+}
+
+/* Assign each task arc to a "lane" (concentric radius) so overlapping windows
+   don't draw on top of each other. Intervals are in degrees and may wrap 360. */
+function assignLanes(items, padding = 6) {
+  const segs = (iv) => {
+    const s = ((iv.start % 360) + 360) % 360;
+    const e = s + (iv.end - iv.start);
+    return e <= 360 ? [[s, e]] : [[s, 360], [0, e - 360]];
+  };
+  const overlaps = (a, b) => segs(a).some(([s1, e1]) => segs(b).some(([s2, e2]) => s1 < e2 && s2 < e1));
+  const lanes = [];
+  [...items].sort((a, b) => a.startAngle - b.startAngle).forEach((item) => {
+    const iv = { start: item.startAngle, end: item.startAngle + item.sweep + padding };
+    let lane = lanes.findIndex((l) => l.every((o) => !overlaps(iv, o)));
+    if (lane === -1) { lanes.push([]); lane = lanes.length - 1; }
+    lanes[lane].push(iv);
+    item.lane = lane;
+  });
+  return items;
+}
+
 function SeasonRing({ tasks, size = 260 }) {
   const cx = size / 2, cy = size / 2;
   const r = size * 0.34;
-  const rDots = size * 0.34;
   const rTicks = size * 0.42;
   const rLabels = size * 0.47;
   const circumference = 2 * Math.PI * r;
@@ -149,6 +224,14 @@ function SeasonRing({ tasks, size = 260 }) {
   const today = new Date();
   const todayAngle = angleForMonthDay(today.getMonth() + 1, today.getDate());
   const todayPt = { x: cx + rTicks * Math.cos(todayAngle * Math.PI / 180), y: cy + rTicks * Math.sin(todayAngle * Math.PI / 180) };
+
+  const taskArcs = assignLanes(tasks.map((t) => {
+    const startAngle = angleForMonthDay(t.startMonth, t.startDay);
+    let sweep = angleForMonthDay(t.endMonth, t.endDay) - startAngle;
+    if (sweep <= 0) sweep += 360;
+    return { t, startAngle, sweep };
+  }));
+  const rLane = (lane) => size * (0.295 - lane * 0.033);
 
   return (
     <svg width={size} height={size} className="mx-auto block">
@@ -174,14 +257,18 @@ function SeasonRing({ tasks, size = 260 }) {
       })}
       <line x1={cx} y1={cy} x2={todayPt.x} y2={todayPt.y} stroke="#D9A441" strokeWidth={1.5} opacity={0.9} />
       <circle cx={todayPt.x} cy={todayPt.y} r={4} fill="#D9A441" />
-      {tasks.map((t) => {
-        const ang = angleForMonthDay(t.month, t.day);
-        const p = { x: cx + rDots * Math.cos(ang * Math.PI / 180), y: cy + rDots * Math.sin(ang * Math.PI / 180) };
+      {taskArcs.map(({ t, startAngle, sweep, lane }) => {
         const meta = CATS[t.category] || CATS.other;
+        const rr = rLane(lane);
+        const startPt = { x: cx + rr * Math.cos(startAngle * Math.PI / 180), y: cy + rr * Math.sin(startAngle * Math.PI / 180) };
         return (
-          <circle key={t.id} cx={p.x} cy={p.y} r={5.5} fill={meta.color} stroke="#1F2A1C" strokeWidth={1.5}>
-            <title>{`${t.title} — ${fmtDate(nextOccurrence(t.month, t.day))}`}</title>
-          </circle>
+          <g key={t.id}>
+            <path d={arcPath(cx, cy, rr, startAngle, sweep)} fill="none" stroke={meta.color}
+              strokeWidth={4} strokeLinecap="round" opacity={0.85}>
+              <title>{`${t.title} — ${fmtWindow(windowStatus(t))}`}</title>
+            </path>
+            <circle cx={startPt.x} cy={startPt.y} r={3} fill={meta.color} stroke="#1F2A1C" strokeWidth={1} />
+          </g>
         );
       })}
       <circle cx={cx} cy={cy} r={2} fill="#EDE6D6" />
@@ -228,7 +315,10 @@ export default function BonsaiAlmanac() {
   useEffect(() => {
     (async () => {
       let sp = await loadJSON("bonsai-species", null);
-      if (!sp) { sp = SEED_SPECIES; await saveJSON("bonsai-species", sp); }
+      if (!sp) sp = SEED_SPECIES;
+      // migrate any legacy single-date tasks to windows
+      sp = sp.map((s) => ({ ...s, tasks: (s.tasks || []).map(normalizeTask) }));
+      await saveJSON("bonsai-species", sp);
       const co = await loadJSON("bonsai-completions", {});
       setSpecies(sp);
       setCompletions(co);
@@ -250,14 +340,18 @@ export default function BonsaiAlmanac() {
   const allUpcoming = useMemo(() => {
     const rows = [];
     species.forEach((s) => s.tasks.forEach((t) => {
-      const d = nextOccurrence(t.month, t.day);
-      rows.push({ speciesId: s.id, speciesName: s.name, task: t, date: d, done: !!completions[`${s.id}:${t.id}:${year}`] });
+      const st = windowStatus(t);
+      rows.push({ speciesId: s.id, speciesName: s.name, task: t, ...st, done: !!completions[`${s.id}:${t.id}:${year}`] });
     }));
-    return rows.sort((a, b) => a.date - b.date).slice(0, 10);
+    // open windows first (closing soonest at the top), then upcoming by start date
+    return rows.sort((a, b) => {
+      if (a.open !== b.open) return a.open ? -1 : 1;
+      return a.open ? a.end - b.end : a.start - b.start;
+    }).slice(0, 10);
   }, [species, completions, year]);
 
   const active = species.find((s) => s.id === activeId) || null;
-  const activeTasks = active ? [...active.tasks].sort((a, b) => (a.month - b.month) || (a.day - b.day)) : [];
+  const activeTasks = active ? [...active.tasks].sort((a, b) => (a.startMonth - b.startMonth) || (a.startDay - b.startDay)) : [];
 
   const removeSpecies = (id) => {
     const next = species.filter((s) => s.id !== id);
@@ -269,7 +363,7 @@ export default function BonsaiAlmanac() {
     persistSpecies(next);
   };
   const addTask = (speciesId, task) => {
-    const next = species.map((s) => s.id === speciesId ? { ...s, tasks: [...s.tasks, { ...task, id: `t${Date.now()}` }] } : s);
+    const next = species.map((s) => s.id === speciesId ? { ...s, tasks: [...s.tasks, { ...normalizeTask(task), id: `t${Date.now()}` }] } : s);
     persistSpecies(next);
   };
   const addSpeciesBatch = (list) => {
@@ -277,12 +371,17 @@ export default function BonsaiAlmanac() {
     const additions = list.map((sp, si) => {
       const id = `${(sp.name || "species").toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}-${si}`;
       if (!firstId) firstId = id;
-      const tasks = (sp.tasks || []).map((t, ti) => ({
-        id: `t${Date.now()}${si}${ti}`,
-        title: t.title, month: t.month, day: t.day,
-        category: CATS[t.category] ? t.category : "other",
-        description: t.description || "",
-      }));
+      const tasks = (sp.tasks || []).map((t, ti) => {
+        const nt = normalizeTask(t);
+        return {
+          id: `t${Date.now()}${si}${ti}`,
+          title: nt.title,
+          startMonth: nt.startMonth, startDay: nt.startDay,
+          endMonth: nt.endMonth, endDay: nt.endDay,
+          category: CATS[nt.category] ? nt.category : "other",
+          description: nt.description || "",
+        };
+      });
       return { id, name: sp.name || "Untitled", botanicalName: sp.botanicalName || "", tasks };
     });
     const next = [...species, ...additions];
@@ -315,7 +414,7 @@ export default function BonsaiAlmanac() {
           <div className="space-y-1.5">
             {allUpcoming.map((row, i) => {
               const meta = CATS[row.task.category] || CATS.other;
-              const soon = (row.date - new Date()) / 86400000 <= 14;
+              const soon = row.open || (row.start - new Date()) / 86400000 <= 14;
               return (
                 <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ background: "#26331F" }}>
                   <button onClick={() => toggleDone(row.speciesId, row.task.id)}
@@ -325,10 +424,19 @@ export default function BonsaiAlmanac() {
                   </button>
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] truncate" style={{ opacity: row.done ? 0.5 : 1, textDecoration: row.done ? "line-through" : "none" }}>{row.task.title}</div>
-                    <div className="text-[11px]" style={{ color: "#8A9483" }}>{row.speciesName} · {seasonLabel(row.date.getMonth() + 1)}</div>
+                    <div className="text-[11px]" style={{ color: "#8A9483" }}>{row.speciesName} · {seasonLabel(row.start.getMonth() + 1)}</div>
                   </div>
-                  <div className="text-[12px] text-right shrink-0" style={{ color: soon ? "#D9A441" : "#A9B29C", fontFamily: "IBM Plex Mono, monospace" }}>
-                    {daysUntilText(row.date)}
+                  <div className="text-right shrink-0" style={{ fontFamily: "IBM Plex Mono, monospace" }}>
+                    {row.open ? (
+                      <>
+                        <div className="text-[12px]" style={{ color: "#8FA876" }}>Open now</div>
+                        <div className="text-[11px]" style={{ color: "#A9B29C" }}>until {fmtDate(row.end)}</div>
+                      </>
+                    ) : (
+                      <div className="text-[12px]" style={{ color: soon ? "#D9A441" : "#A9B29C" }}>
+                        {daysUntilText(row.start)}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -386,7 +494,7 @@ export default function BonsaiAlmanac() {
           <div className="mt-6 space-y-2">
             {activeTasks.map((t) => {
               const done = !!completions[`${active.id}:${t.id}:${year}`];
-              const d = nextOccurrence(t.month, t.day);
+              const st = windowStatus(t);
               return (
                 <div key={t.id} className="rounded-lg px-3 py-2.5" style={{ background: "#26331F" }}>
                   <div className="flex items-start gap-3">
@@ -401,7 +509,10 @@ export default function BonsaiAlmanac() {
                         <Badge category={t.category} />
                       </div>
                       <p className="text-[12px] mt-1 leading-snug" style={{ color: "#A9B29C" }}>{t.description}</p>
-                      <p className="text-[11px] mt-1" style={{ color: "#6E7A64", fontFamily: "IBM Plex Mono, monospace" }}>{seasonLabel(t.month)} · next {fmtDate(d)}</p>
+                      <p className="text-[11px] mt-1" style={{ color: "#6E7A64", fontFamily: "IBM Plex Mono, monospace" }}>
+                        {seasonLabel(t.startMonth)} · {fmtWindow(st)}
+                        {st.open && <span style={{ color: "#8FA876" }}> · open now</span>}
+                      </p>
                     </div>
                     <ConfirmButton onConfirm={() => removeTask(active.id, t.id)} />
                   </div>
@@ -447,30 +558,54 @@ function ModalShell({ title, onClose, children }) {
 
 const inputStyle = { background: "#1F2A1C", border: "1px solid #3A4830", color: "#EDE6D6" };
 
+function MonthDayRow({ label, month, day, onMonth, onDay }) {
+  return (
+    <div>
+      <label className="text-[11px] block mb-1" style={{ color: "#A9B29C" }}>{label}</label>
+      <div className="flex gap-2">
+        <select value={month} onChange={(e) => onMonth(+e.target.value)} className="flex-1 px-3 py-2 rounded-lg text-sm" style={inputStyle}>
+          {MONTH_LETTERS.map((_, i) => <option key={i} value={i + 1}>{new Date(2000, i, 1).toLocaleString(undefined, { month: "long" })}</option>)}
+        </select>
+        <input type="number" min={1} max={31} value={day} onChange={(e) => onDay(+e.target.value)} className="w-20 px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+      </div>
+    </div>
+  );
+}
+
 function AddTaskModal({ onClose, onAdd }) {
   const [title, setTitle] = useState("");
-  const [month, setMonth] = useState(5);
-  const [day, setDay] = useState(1);
   const [category, setCategory] = useState("other");
+  const [startMonth, setStartMonth] = useState(5);
+  const [startDay, setStartDay] = useState(1);
+  const [endMonth, setEndMonth] = useState(5);
+  const [endDay, setEndDay] = useState(15);
+  const [endTouched, setEndTouched] = useState(false);
   const [description, setDescription] = useState("");
+
+  // until the user edits the end date, keep it at the category's typical span
+  useEffect(() => {
+    if (endTouched) return;
+    const end = dateFor(REF_YEAR, startMonth, startDay);
+    end.setDate(end.getDate() + defaultSpanDays(category));
+    setEndMonth(end.getMonth() + 1);
+    setEndDay(end.getDate());
+  }, [startMonth, startDay, category, endTouched]);
 
   return (
     <ModalShell title="Add a care task" onClose={onClose}>
       <div className="space-y-3">
         <input placeholder="Task title" value={title} onChange={(e) => setTitle(e.target.value)}
           className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
-        <div className="flex gap-2">
-          <select value={month} onChange={(e) => setMonth(+e.target.value)} className="flex-1 px-3 py-2 rounded-lg text-sm" style={inputStyle}>
-            {MONTH_LETTERS.map((_, i) => <option key={i} value={i + 1}>{new Date(2000, i, 1).toLocaleString(undefined, { month: "long" })}</option>)}
-          </select>
-          <input type="number" min={1} max={31} value={day} onChange={(e) => setDay(+e.target.value)} className="w-20 px-3 py-2 rounded-lg text-sm" style={inputStyle} />
-        </div>
         <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle}>
           {Object.entries(CATS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
         </select>
+        <MonthDayRow label="Window opens" month={startMonth} day={startDay} onMonth={setStartMonth} onDay={setStartDay} />
+        <MonthDayRow label="Window closes" month={endMonth} day={endDay}
+          onMonth={(v) => { setEndTouched(true); setEndMonth(v); }}
+          onDay={(v) => { setEndTouched(true); setEndDay(v); }} />
         <textarea placeholder="Notes (optional)" value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
           className="w-full px-3 py-2 rounded-lg text-sm resize-none" style={inputStyle} />
-        <button disabled={!title.trim()} onClick={() => onAdd({ title: title.trim(), month, day, category, description: description.trim() })}
+        <button disabled={!title.trim()} onClick={() => onAdd({ title: title.trim(), startMonth, startDay, endMonth, endDay, category, description: description.trim() })}
           className="w-full py-2.5 rounded-lg text-sm font-medium disabled:opacity-40" style={{ background: "#D9A441", color: "#1F2A1C" }}>
           Add task
         </button>
