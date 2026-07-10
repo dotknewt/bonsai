@@ -9,3 +9,15 @@ body {
 .font-display {
   font-family: "Fraunces", serif;
 }
+
+button,
+select,
+input,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid #d9a441;
+  outline-offset: 3px;
+}
