@@ -45,6 +45,10 @@ function defaultSpanDays(category) {
   return (CATS[category] || CATS.other).spanDays;
 }
 
+function catOf(t) {
+  return CATS[t.category] ? t.category : "other";
+}
+
 /* Accepts both the current shape (startMonth/startDay/endMonth/endDay) and the
    legacy single-date shape (month/day). A missing end gets the category's
    default span. */
@@ -203,6 +207,67 @@ const SEED_SPECIES = [{
     { id: "m11", title: "Winter — hardiness check", month: 10, day: 20, category: "other", description: "A mountain native, mugo shrugs off severe cold, but shield it from freezing winds while the rootball is frozen. Yellowing oldest needles now is natural shedding, not trouble." },
   ],
 }, {
+  id: "acer-acer-palmatum",
+  name: "Japanese Maple",
+  botanicalName: "Acer palmatum",
+  // Care windows adapted from the Bonsai4me Acer palmatum species guide, shifted ~3-4 weeks for Norway.
+  tasks: [
+    { id: "a1", title: "Shelter from sun & wind", startMonth: 4, startDay: 15, endMonth: 9, endDay: 30, category: "other", description: "Keep out of direct midday sun and strong wind all season — the thin leaves scorch easily. Good morning light still supports vigour and autumn colour. Green-leaved varieties are tougher than red." },
+    { id: "a2", title: "Repot as buds extend (every 2–5 yrs)", startMonth: 4, startDay: 20, endMonth: 5, endDay: 10, category: "repot", description: "Repot just as buds start to move in spring, then stop once shoots extend. Early-leafing varieties like Kiyohime can go a little later. Free-draining soil." },
+    { id: "a3", title: "Weekly high-nitrogen feed", startMonth: 5, startDay: 10, endMonth: 6, endDay: 15, category: "feed", description: "Feed weekly with high-nitrogen fertiliser as soon as leafbuds open to build strong leaves. On refined trees, holding the early feed back keeps internodes short." },
+    { id: "a4", title: "Pinch new shoots to shape", startMonth: 5, startDay: 20, endMonth: 7, endDay: 15, category: "prune", description: "Pinch or cut new growth back to one or two pairs of leaves, leaving two opposing leaves, to build fine twiggy ramification. Never do structural pruning now." },
+    { id: "a5", title: "Switch to balanced feed", startMonth: 6, startDay: 15, endMonth: 8, endDay: 25, category: "feed", description: "Once spring growth hardens off, feed fortnightly with a balanced fertiliser through the rest of the season." },
+    { id: "a6", title: "Pest & disease watch", startMonth: 5, startDay: 15, endMonth: 9, endDay: 15, category: "pest", description: "Watch for aphids, scale insects and caterpillars, plus fungal problems like verticillium wilt. Keep airflow good to limit mildew on shaded inner growth." },
+    { id: "a7", title: "Mid-summer leaf-cut & hard pruning", startMonth: 7, startDay: 1, endMonth: 7, endDay: 25, category: "prune", description: "The semi-dormant midsummer window is safe for hard/structural pruning and, on healthy trees only, partial leaf-cutting — never in a repotting year or two years running. Seal larger wounds." },
+    { id: "a8", title: "Wiring window", startMonth: 5, startDay: 1, endMonth: 10, endDay: 20, category: "wire", description: "Wire any time from spring to late autumn. Bare branches in spring, after defoliation in midsummer, or after leaf-fall are easiest. Bark marks readily, so check often." },
+    { id: "a9", title: "Autumn hard-pruning window", startMonth: 10, startDay: 15, endMonth: 11, endDay: 10, category: "prune", description: "The other safe time for hard and formative pruning is within about a week of leaf-fall. Crucially, never prune in spring — all acers bleed profusely then and can lose branches or be badly weakened." },
+    { id: "a10", title: "Winter dormancy & frost protection", startMonth: 11, startDay: 15, endMonth: 3, endDay: 1, category: "other", description: "Acers need a real dormancy (below ~10°C for at least 44 days) but the fine roots are frost-tender in a pot — shelter below −10°C. Norwegian winters cover the cold requirement easily." },
+  ],
+}, {
+  id: "ilex-ilex-verticillata",
+  name: "Winterberry",
+  botanicalName: "Ilex verticillata",
+  // No dedicated Ilex verticillata guide on Bonsai4me; care adapted from its Ilex (holly) guide — closest match is the deciduous Ilex serrata — shifted ~3-4 weeks for Norway.
+  tasks: [
+    { id: "il1", title: "Repot annually as buds extend", startMonth: 4, startDay: 20, endMonth: 5, endDay: 15, category: "repot", description: "Deciduous hollies repot annually in spring as new buds extend, in a basic free-draining soil mix." },
+    { id: "il2", title: "Fortnightly feeding", startMonth: 5, startDay: 10, endMonth: 9, endDay: 1, category: "feed", description: "Feed every two weeks right through the growing season." },
+    { id: "il3", title: "Flowering — keep a pollinator nearby", startMonth: 6, startDay: 1, endMonth: 6, endDay: 30, category: "other", description: "Winterberry is dioecious: a male plant must be near a female for berries to set. The small flowers open in early summer, so keep both sexes together while pollinators are active." },
+    { id: "il4", title: "Trim to shape", startMonth: 6, startDay: 1, endMonth: 8, endDay: 15, category: "prune", description: "Trim new growth to shape through the growing season. To keep the autumn berry display, avoid removing this year's fruiting wood." },
+    { id: "il5", title: "Pest watch", startMonth: 5, startDay: 15, endMonth: 9, endDay: 1, category: "pest", description: "Young shoots can be hit by aphids, and scale insects turn up on hollies too — check shoot tips and leaf undersides." },
+    { id: "il6", title: "Wiring — brittle branches", startMonth: 6, startDay: 15, endMonth: 8, endDay: 15, category: "wire", description: "Holly branches are brittle and snap easily, so wire gently and support sharp bends. Summer, with the wood pliable, is the easiest window." },
+    { id: "il7", title: "Semi-ripe cuttings", startMonth: 8, startDay: 15, endMonth: 9, endDay: 30, category: "propagate", description: "Take semi-ripe cuttings in late summer or early autumn. Seed is possible too but sown outdoors in autumn it can take 2–3 years to germinate." },
+    { id: "il8", title: "Berry display & winter protection", startMonth: 10, startDay: 15, endMonth: 12, endDay: 20, category: "other", description: "Bright red berries hold on the bare twigs into winter — the whole point of the species. Fully deciduous and fairly hardy, but give some shelter once frosts drop below −5°C." },
+  ],
+}, {
+  id: "metasequoia-glyptostroboides",
+  name: "Dawn Redwood",
+  botanicalName: "Metasequoia glyptostroboides",
+  // No dedicated Bonsai4me species guide; care adapted from Bonsai4me's deciduous repotting/watering articles plus established dawn-redwood practice, shifted ~3-4 weeks for Norway.
+  tasks: [
+    { id: "d1", title: "Full sun, never let it dry", startMonth: 4, startDay: 20, endMonth: 9, endDay: 30, category: "other", description: "Stand in full sun outdoors year-round. A fast-growing swamp tree, it is one of the few bonsai that tolerates constant wet — never let the pot dry out, and stand it in a water tray through hot spells." },
+    { id: "d2", title: "Repot as buds move (remove ~1/3 roots)", startMonth: 4, startDay: 15, endMonth: 5, endDay: 10, category: "repot", description: "Being deciduous, it repots in spring as buds move; it is safe to remove about a third of the rootmass. Grows roots fast, so young trees may need it yearly. Free-draining soil that still holds moisture." },
+    { id: "d3", title: "Feed hard — it grows fast", startMonth: 5, startDay: 10, endMonth: 8, endDay: 25, category: "feed", description: "A vigorous grower and heavy feeder: feed regularly right through the growing season to fuel ramification." },
+    { id: "d4", title: "Clip-and-grow through the season", startMonth: 5, startDay: 20, endMonth: 8, endDay: 31, category: "prune", description: "Build the tree by clip-and-grow: let shoots extend, then cut back to a couple of leaf pairs. Because buds are opposite, remove one of each pair at forks to avoid swollen bar branches." },
+    { id: "d5", title: "Wire young shoots early", startMonth: 5, startDay: 20, endMonth: 7, endDay: 15, category: "wire", description: "Mostly a formal-upright, clip-and-grow species, but new shoots can be wired while still soft — they lignify and thicken fast, so watch closely for the wire biting in." },
+    { id: "d6", title: "Pest watch — aphids", startMonth: 5, startDay: 15, endMonth: 8, endDay: 31, category: "pest", description: "Generally trouble-free; aphids on the soft new growth are the main thing to watch for." },
+    { id: "d7", title: "Autumn colour", startMonth: 10, startDay: 1, endMonth: 10, endDay: 31, category: "other", description: "The soft foliage turns orange-brown to red-brown before dropping — a deciduous conifer, so expect it to go bare for winter." },
+    { id: "d8", title: "Protect roots from hard freeze", startMonth: 11, startDay: 15, endMonth: 3, endDay: 1, category: "other", description: "Hardy and needs its winter dormancy, but the shallow, moisture-loving roots can be damaged by a hard freeze in a bonsai pot — shelter the pot in a cold frame or heel it into the ground during deep Norwegian cold." },
+  ],
+}, {
+  id: "carob-ceratonia-siliqua",
+  name: "Carob",
+  botanicalName: "Ceratonia siliqua",
+  // No Bonsai4me species guide; care based on established Ceratonia siliqua practice. A tender Mediterranean species — must be overwintered frost-free in Norway.
+  tasks: [
+    { id: "c1", title: "Out to full sun & heat", startMonth: 5, startDay: 15, endMonth: 9, endDay: 15, category: "other", description: "A Mediterranean evergreen that loves heat and full sun. Once nights are reliably frost-free, give it the sunniest, warmest spot you have outdoors for the summer." },
+    { id: "c2", title: "Repot & root-prune in warm spring", startMonth: 5, startDay: 20, endMonth: 6, endDay: 10, category: "repot", description: "Repot and root-prune together once the days are genuinely warm — carob resents cold, wet roots. Use a gritty, sharply draining mix; it is drought-adapted and rots in soggy soil." },
+    { id: "c3", title: "Water sparingly, let it dry", startMonth: 5, startDay: 15, endMonth: 9, endDay: 15, category: "other", description: "Xerophytic and drought-tolerant: let the soil approach dryness between waterings rather than keeping it constantly moist." },
+    { id: "c4", title: "Feed through the growing season", startMonth: 5, startDay: 20, endMonth: 8, endDay: 31, category: "feed", description: "Feed during active growth. Carob is slow in both trunk and branch, so steady feeding through the warm months helps it build." },
+    { id: "c5", title: "Prune with the repot", startMonth: 5, startDay: 20, endMonth: 6, endDay: 30, category: "prune", description: "Branch pruning is best done alongside repotting in early summer. Growth is slow, so prune conservatively and let shoots extend before cutting back." },
+    { id: "c6", title: "Pest watch", startMonth: 6, startDay: 1, endMonth: 9, endDay: 1, category: "pest", description: "Under glass and in still summer air, watch for scale insects and mealybug on stems and leaf axils." },
+    { id: "c7", title: "Bring in before frost", startMonth: 9, startDay: 20, endMonth: 10, endDay: 20, category: "other", description: "Carob is very frost-sensitive. In Norway it cannot overwinter outdoors — move it into a frost-free greenhouse or bright cool room before the first frosts and keep it just ticking over until spring." },
+  ],
+}, {
   id: "beech-fagus-sylvatica",
   name: "European Beech",
   botanicalName: "Fagus sylvatica",
@@ -355,15 +420,41 @@ function Badge({ category }) {
   );
 }
 
+/* task-type filter chips shared by the single-species and overlap views */
+function CategoryChips({ cats, enabled, onToggle }) {
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-3">
+      {cats.map((c) => {
+        const meta = CATS[c];
+        const Icon = meta.icon;
+        const on = enabled.includes(c);
+        return (
+          <button key={c} onClick={() => onToggle(c)}
+            aria-pressed={on}
+            className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full font-medium transition"
+            style={{
+              background: on ? meta.color + "33" : "transparent",
+              color: on ? meta.color : "#6E7A64",
+              border: `1px solid ${on ? meta.color : "#3A4830"}`,
+              fontFamily: "IBM Plex Mono, monospace",
+            }}>
+            <Icon size={11} /> {meta.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function ConfirmButton({ onConfirm, label = "", icon: Icon = Trash2 }) {
   const [armed, setArmed] = useState(false);
   useEffect(() => { if (armed) { const t = setTimeout(() => setArmed(false), 2500); return () => clearTimeout(t); } }, [armed]);
   return armed ? (
-    <button onClick={onConfirm} className="text-[11px] px-2 py-1 rounded" style={{ background: "#B4483A", color: "#EDE6D6" }}>
+    <button onClick={onConfirm} className="text-[11px] px-2 py-1 rounded" aria-label={label || "Confirm removal"} style={{ background: "#B4483A", color: "#EDE6D6" }}>
       Remove?
     </button>
   ) : (
-    <button onClick={() => setArmed(true)} className="p-1 rounded hover:bg-white/10 transition" style={{ color: "#A9B29C" }}>
+    <button onClick={() => setArmed(true)} className="p-1 rounded hover:bg-white/10 transition" aria-label={label || "Remove"} title={label || "Remove"} style={{ color: "#A9B29C" }}>
       <Icon size={14} />
     </button>
   );
@@ -375,6 +466,9 @@ export default function BonsaiAlmanac() {
   const [species, setSpecies] = useState([]);
   const [completions, setCompletions] = useState({});
   const [selectedIds, setSelectedIds] = useState([]);
+  // task-type filter — lives here (not in the views) so the choice survives
+  // selecting/unselecting species
+  const [enabledCats, setEnabledCats] = useState([]);
   const [showAddSpecies, setShowAddSpecies] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const [exportPayload, setExportPayload] = useState(null); // { title, text }
@@ -419,10 +513,21 @@ export default function BonsaiAlmanac() {
 
   const selected = species.filter((s) => selectedIds.includes(s.id));
   const active = selected.length === 1 ? selected[0] : null;
-  const activeTasks = active ? [...active.tasks].sort((a, b) => (a.startMonth - b.startMonth) || (a.startDay - b.startDay)) : [];
+
+  // single-species view: chips filter the calendar; with nothing (relevant)
+  // turned on, every task shows
+  const activePresentCats = active ? Object.keys(CATS).filter((c) => active.tasks.some((t) => catOf(t) === c)) : [];
+  const activeFilterCats = enabledCats.filter((c) => activePresentCats.includes(c));
+  const activeVisibleTasks = active
+    ? (activeFilterCats.length ? active.tasks.filter((t) => activeFilterCats.includes(catOf(t))) : active.tasks)
+    : [];
+  const activeTasks = [...activeVisibleTasks].sort((a, b) => (a.startMonth - b.startMonth) || (a.startDay - b.startDay));
 
   const toggleSpecies = (id) => {
     setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  };
+  const toggleCat = (c) => {
+    setEnabledCats((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
   };
 
   const removeSpecies = (id) => {
@@ -493,9 +598,10 @@ export default function BonsaiAlmanac() {
               return (
                 <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ background: "#26331F" }}>
                   <button onClick={() => toggleDone(row.speciesId, row.task.id)}
+                    aria-label={`${row.done ? "Mark incomplete" : "Mark complete"}: ${row.task.title}`}
                     className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition"
                     style={{ border: `1.5px solid ${row.done ? meta.color : "#4A5540"}`, background: row.done ? meta.color : "transparent" }}>
-                    {row.done && <Check size={12} color="#1F2A1C" />}
+                    {row.done && <Check size={12} color="#1F2A1C" aria-hidden="true" />}
                   </button>
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] truncate" style={{ opacity: row.done ? 0.5 : 1, textDecoration: row.done ? "line-through" : "none" }}>{row.task.title}</div>
@@ -536,6 +642,7 @@ export default function BonsaiAlmanac() {
             const isSel = selectedIds.includes(s.id);
             return (
               <button key={s.id} onClick={() => toggleSpecies(s.id)}
+                aria-pressed={isSel}
                 className="shrink-0 px-3 py-2 rounded-xl text-left transition"
                 style={{ background: isSel ? "#EDE6D6" : "#26331F", color: isSel ? "#1F2A1C" : "#EDE6D6", minWidth: 130 }}>
                 <div className="text-[13px] font-medium leading-tight">{s.name}</div>
@@ -544,8 +651,9 @@ export default function BonsaiAlmanac() {
             );
           })}
           <button onClick={() => setShowAddSpecies(true)}
+            aria-label="Add a species"
             className="shrink-0 px-3 py-2 rounded-xl flex items-center gap-1 text-[13px]" style={{ background: "transparent", border: "1px dashed #4A5540", color: "#A9B29C", minWidth: 100 }}>
-            <Plus size={14} /> Add
+            <Plus size={14} aria-hidden="true" /> Add
           </button>
         </div>
         {species.length > 1 && (
@@ -555,11 +663,26 @@ export default function BonsaiAlmanac() {
         )}
       </div>
 
+      {species.length === 0 && (
+        <div className="mx-5 mt-8 rounded-2xl px-5 py-7 text-center" style={{ background: "#26331F", border: "1px solid #3A4830" }}>
+          <Sprout className="mx-auto mb-3" size={28} color="#8FA876" aria-hidden="true" />
+          <h3 className="font-display text-[20px]">Your bench is empty</h3>
+          <p className="text-[13px] mt-1.5" style={{ color: "#A9B29C" }}>
+            Add your first bonsai to start planning seasonal care.
+          </p>
+          <button onClick={() => setShowAddSpecies(true)}
+            className="mt-4 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium"
+            style={{ background: "#D9A441", color: "#1F2A1C" }}>
+            <Plus size={14} aria-hidden="true" /> Add your first species
+          </button>
+        </div>
+      )}
+
       {selected.length === 0 && species.length > 0 && (
         <p className="px-5 pt-6 text-sm" style={{ color: "#A9B29C" }}>Select a species above to see its calendar.</p>
       )}
 
-      {selected.length > 1 && <OverlapView speciesList={selected} key={selectedIds.join(",")} />}
+      {selected.length > 1 && <OverlapView speciesList={selected} enabledCats={enabledCats} onToggleCat={toggleCat} />}
 
       {/* active species detail */}
       {active && (
@@ -578,7 +701,16 @@ export default function BonsaiAlmanac() {
             </div>
           </div>
 
-          <div className="mt-4"><SeasonRing tasks={active.tasks} /></div>
+          {activePresentCats.length > 1 && (
+            <>
+              <CategoryChips cats={activePresentCats} enabled={enabledCats} onToggle={toggleCat} />
+              <p className="text-[11px] mt-1" style={{ color: "#6E7A64" }}>
+                Tap a task type to filter — with none on, everything shows.
+              </p>
+            </>
+          )}
+
+          <div className="mt-4"><SeasonRing tasks={activeVisibleTasks} /></div>
 
           <div className="mt-6 space-y-2">
             {activeTasks.map((t) => {
@@ -588,9 +720,10 @@ export default function BonsaiAlmanac() {
                 <div key={t.id} className="rounded-lg px-3 py-2.5" style={{ background: "#26331F" }}>
                   <div className="flex items-start gap-3">
                     <button onClick={() => toggleDone(active.id, t.id)}
+                      aria-label={`${done ? "Mark incomplete" : "Mark complete"}: ${t.title}`}
                       className="w-5 h-5 mt-0.5 rounded-full flex items-center justify-center shrink-0 transition"
                       style={{ border: `1.5px solid ${done ? (CATS[t.category] || CATS.other).color : "#4A5540"}`, background: done ? (CATS[t.category] || CATS.other).color : "transparent" }}>
-                      {done && <Check size={12} color="#1F2A1C" />}
+                      {done && <Check size={12} color="#1F2A1C" aria-hidden="true" />}
                     </button>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -611,8 +744,9 @@ export default function BonsaiAlmanac() {
           </div>
 
           <button onClick={() => setShowAddTask(true)}
+            aria-label={`Add a care task for ${active.name}`}
             className="mt-4 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[13px]" style={{ border: "1px dashed #4A5540", color: "#A9B29C" }}>
-            <Plus size={14} /> Add a care task
+            <Plus size={14} aria-hidden="true" /> Add a care task
           </button>
         </div>
       )}
@@ -631,26 +765,22 @@ export default function BonsaiAlmanac() {
 }
 
 /* ---------- overlap / comparison view (2+ species selected) ---------- */
-function OverlapView({ speciesList }) {
-  // nothing selected by default — the user picks which task types to compare
-  const [enabledCats, setEnabledCats] = useState([]);
-
+function OverlapView({ speciesList, enabledCats, onToggleCat }) {
   const allTasks = useMemo(() => speciesList.flatMap((s) =>
     s.tasks.map((t) => ({ ...t, speciesId: s.id, speciesName: s.name }))
   ), [speciesList]);
 
   const presentCats = useMemo(
-    () => Object.keys(CATS).filter((c) => allTasks.some((t) => (CATS[t.category] ? t.category : "other") === c)),
+    () => Object.keys(CATS).filter((c) => allTasks.some((t) => catOf(t) === c)),
     [allTasks]
   );
-  const toggleCat = (c) => setEnabledCats((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
 
-  const visibleTasks = allTasks.filter((t) => enabledCats.includes(CATS[t.category] ? t.category : "other"));
+  const visibleTasks = allTasks.filter((t) => enabledCats.includes(catOf(t)));
 
   const overlapsByCat = useMemo(() => enabledCats
     .map((cat) => ({
       cat,
-      ranges: overlapRanges(visibleTasks.filter((t) => (CATS[t.category] ? t.category : "other") === cat)),
+      ranges: overlapRanges(visibleTasks.filter((t) => catOf(t) === cat)),
     }))
     .filter((x) => x.ranges.length)
     .sort((a, b) => a.ranges[0].start - b.ranges[0].start),
@@ -677,25 +807,7 @@ function OverlapView({ speciesList }) {
       </p>
 
       {/* task-type filter chips */}
-      <div className="flex flex-wrap gap-1.5 mt-3">
-        {presentCats.map((c) => {
-          const meta = CATS[c];
-          const Icon = meta.icon;
-          const on = enabledCats.includes(c);
-          return (
-            <button key={c} onClick={() => toggleCat(c)}
-              className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full font-medium transition"
-              style={{
-                background: on ? meta.color + "33" : "transparent",
-                color: on ? meta.color : "#6E7A64",
-                border: `1px solid ${on ? meta.color : "#3A4830"}`,
-                fontFamily: "IBM Plex Mono, monospace",
-              }}>
-              <Icon size={11} /> {meta.label}
-            </button>
-          );
-        })}
-      </div>
+      <CategoryChips cats={presentCats} enabled={enabledCats} onToggle={onToggleCat} />
 
       <div className="mt-4"><SeasonRing tasks={visibleTasks} overlays={overlays} /></div>
       <p className="text-[11px] -mt-1 text-center" style={{ color: "#6E7A64" }}>
@@ -744,7 +856,7 @@ function ModalShell({ title, onClose, children }) {
       <div className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] overflow-y-auto" style={{ background: "#26331F", color: "#EDE6D6" }}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-[18px]">{title}</h3>
-          <button onClick={onClose} style={{ color: "#A9B29C" }}><X size={18} /></button>
+          <button onClick={onClose} aria-label="Close dialog" title="Close" style={{ color: "#A9B29C" }}><X size={18} aria-hidden="true" /></button>
         </div>
         {children}
       </div>
