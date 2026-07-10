@@ -86,7 +86,7 @@ export default function FormatGuide({ onClose }) {
       <div className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] overflow-y-auto" style={{ background: "#26331F", color: "#EDE6D6" }}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-[18px]">Import format</h3>
-          <button onClick={onClose} style={{ color: "#A9B29C" }}><X size={18} /></button>
+          <button onClick={onClose} aria-label="Close dialog" title="Close"><X size={18} aria-hidden="true" /></button>
         </div>
 
         <p className="text-[12px] mb-4" style={{ color: "#A9B29C" }}>

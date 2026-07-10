@@ -601,7 +601,7 @@ export default function BonsaiAlmanac() {
                     aria-label={`${row.done ? "Mark incomplete" : "Mark complete"}: ${row.task.title}`}
                     className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition"
                     style={{ border: `1.5px solid ${row.done ? meta.color : "#4A5540"}`, background: row.done ? meta.color : "transparent" }}>
-                    {row.done && <Check size={12} color="#1F2A1C" />}
+                    {row.done && <Check size={12} color="#1F2A1C" aria-hidden="true" />}
                   </button>
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] truncate" style={{ opacity: row.done ? 0.5 : 1, textDecoration: row.done ? "line-through" : "none" }}>{row.task.title}</div>
@@ -653,7 +653,7 @@ export default function BonsaiAlmanac() {
           <button onClick={() => setShowAddSpecies(true)}
             aria-label="Add a species"
             className="shrink-0 px-3 py-2 rounded-xl flex items-center gap-1 text-[13px]" style={{ background: "transparent", border: "1px dashed #4A5540", color: "#A9B29C", minWidth: 100 }}>
-            <Plus size={14} /> Add
+            <Plus size={14} aria-hidden="true" /> Add
           </button>
         </div>
         {species.length > 1 && (
@@ -673,7 +673,7 @@ export default function BonsaiAlmanac() {
           <button onClick={() => setShowAddSpecies(true)}
             className="mt-4 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium"
             style={{ background: "#D9A441", color: "#1F2A1C" }}>
-            <Plus size={14} /> Add your first species
+            <Plus size={14} aria-hidden="true" /> Add your first species
           </button>
         </div>
       )}
@@ -723,7 +723,7 @@ export default function BonsaiAlmanac() {
                       aria-label={`${done ? "Mark incomplete" : "Mark complete"}: ${t.title}`}
                       className="w-5 h-5 mt-0.5 rounded-full flex items-center justify-center shrink-0 transition"
                       style={{ border: `1.5px solid ${done ? (CATS[t.category] || CATS.other).color : "#4A5540"}`, background: done ? (CATS[t.category] || CATS.other).color : "transparent" }}>
-                      {done && <Check size={12} color="#1F2A1C" />}
+                      {done && <Check size={12} color="#1F2A1C" aria-hidden="true" />}
                     </button>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -746,7 +746,7 @@ export default function BonsaiAlmanac() {
           <button onClick={() => setShowAddTask(true)}
             aria-label={`Add a care task for ${active.name}`}
             className="mt-4 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[13px]" style={{ border: "1px dashed #4A5540", color: "#A9B29C" }}>
-            <Plus size={14} /> Add a care task
+            <Plus size={14} aria-hidden="true" /> Add a care task
           </button>
         </div>
       )}
@@ -856,7 +856,7 @@ function ModalShell({ title, onClose, children }) {
       <div className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] overflow-y-auto" style={{ background: "#26331F", color: "#EDE6D6" }}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-[18px]">{title}</h3>
-          <button onClick={onClose} aria-label={`Close ${title}`} title="Close" style={{ color: "#A9B29C" }}><X size={18} /></button>
+          <button onClick={onClose} aria-label="Close dialog" title="Close" style={{ color: "#A9B29C" }}><X size={18} aria-hidden="true" /></button>
         </div>
         {children}
       </div>
