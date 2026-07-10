@@ -632,7 +632,8 @@ export default function BonsaiAlmanac() {
 
 /* ---------- overlap / comparison view (2+ species selected) ---------- */
 function OverlapView({ speciesList }) {
-  const [disabledCats, setDisabledCats] = useState([]);
+  // nothing selected by default — the user picks which task types to compare
+  const [enabledCats, setEnabledCats] = useState([]);
 
   const allTasks = useMemo(() => speciesList.flatMap((s) =>
     s.tasks.map((t) => ({ ...t, speciesId: s.id, speciesName: s.name }))
@@ -642,8 +643,7 @@ function OverlapView({ speciesList }) {
     () => Object.keys(CATS).filter((c) => allTasks.some((t) => (CATS[t.category] ? t.category : "other") === c)),
     [allTasks]
   );
-  const enabledCats = presentCats.filter((c) => !disabledCats.includes(c));
-  const toggleCat = (c) => setDisabledCats((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
+  const toggleCat = (c) => setEnabledCats((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
 
   const visibleTasks = allTasks.filter((t) => enabledCats.includes(CATS[t.category] ? t.category : "other"));
 
