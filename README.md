@@ -7,6 +7,8 @@ completion check-offs — all stored locally in your browser, no account needed.
 Ships with a European Beech (*Fagus sylvatica*) schedule as seed data; add your
 own species and tasks from there.
 
+**Live app:** https://dotknewt.github.io/bonsai/
+
 ## Run it
 
 ```bash
@@ -18,6 +20,11 @@ npm run preview    # serve the production build locally
 
 The build is a fully static site (`dist/`) — host it on GitHub Pages, Netlify,
 or any static file server.
+
+## Deploying
+
+Every push to `main` triggers `.github/workflows/deploy.yml`, which builds the
+app and publishes `dist/` to GitHub Pages at the URL above.
 
 ## On your phone (Android / iOS)
 
