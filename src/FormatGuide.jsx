@@ -6,7 +6,7 @@ const MONO = { fontFamily: "IBM Plex Mono, monospace" };
 const SPECIES_FIELDS = [
   { key: "name", value: "string — required. Common name, e.g. \"Japanese Maple\"." },
   { key: "botanicalName", value: "string — optional. E.g. \"Acer palmatum\"." },
-  { key: "tasks", value: "array of task objects — may be empty." },
+  { key: "tasks", value: "array of task objects — may be empty, or omitted when importing." },
 ];
 
 const TASK_FIELDS = [
@@ -92,7 +92,9 @@ export default function FormatGuide({ onClose }) {
         <p className="text-[12px] mb-4" style={{ color: "#A9B29C" }}>
           The import box accepts JSON in three shapes: a bare task list (uses the name you typed above),
           a single species object, or a whole collection — the same formats "Export" produces.
-          Each task is a care <em>window</em> spanning weeks to months, not a single day.
+          Whole collections are best brought in through Collection → "Import", which previews the
+          file and can skip duplicates. Each task is a care <em>window</em> spanning weeks to months,
+          not a single day.
         </p>
 
         <FieldTable title="Species object" rows={SPECIES_FIELDS} />
@@ -100,7 +102,7 @@ export default function FormatGuide({ onClose }) {
 
         <Example title="Bare task list" note="Type a common name first, then paste just the tasks." code={EXAMPLE_TASKS} />
         <Example title="Single species" note="A complete species — name comes from the JSON." code={EXAMPLE_SPECIES} />
-        <Example title="Whole collection" note="Several species at once, e.g. someone's exported almanac." code={EXAMPLE_COLLECTION} />
+        <Example title="Whole collection" note={'Several species at once — use Collection → "Import" to preview and skip duplicates.'} code={EXAMPLE_COLLECTION} />
       </div>
     </div>
   );

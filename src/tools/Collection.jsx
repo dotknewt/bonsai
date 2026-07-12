@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Plus, Share2, Pencil, ChevronDown } from "lucide-react";
+import { Plus, Share2, Pencil, ChevronDown, FileUp } from "lucide-react";
 import { seasonLabel, windowStatus, fmtWindow, fmtISODate, sortTasksByStart } from "../lib/dates.js";
 import { toExportObject } from "../lib/storage.js";
 import { Badge, ConfirmButton, EmptyBench } from "../components/ui.jsx";
 import AddSpeciesModal, { EditSpeciesModal } from "../components/SpeciesModal.jsx";
 import TaskModal from "../components/TaskModal.jsx";
 import ExportModal from "../components/ExportModal.jsx";
+import ImportModal from "../components/ImportModal.jsx";
 import SpecimenModal from "../components/SpecimenModal.jsx";
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
@@ -17,6 +18,7 @@ export default function Collection({ data, actions }) {
   const { species, specimensBySpecies } = data;
   const [openId, setOpenId] = useState(null);
   const [showAddSpecies, setShowAddSpecies] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [editSpecies, setEditSpecies] = useState(null);   // species being renamed
   const [taskModal, setTaskModal] = useState(null);       // { speciesId, task|null }
   const [specimenModal, setSpecimenModal] = useState(null); // { species, specimen|null }
@@ -28,6 +30,10 @@ export default function Collection({ data, actions }) {
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-[12px] tracking-wide uppercase" style={{ color: "#A9B29C", fontFamily: "IBM Plex Mono, monospace" }}>Species</h2>
           <div className="flex items-center gap-4">
+            <button onClick={() => setShowImport(true)}
+              className="flex items-center gap-1 text-[11px]" style={{ color: "#A9B29C" }}>
+              <FileUp size={12} /> Import
+            </button>
             {species.length > 0 && (
               <button onClick={() => setExportPayload({ title: "Export whole collection", text: JSON.stringify(species.map(toExportObject), null, 2) })}
                 className="flex items-center gap-1 text-[11px]" style={{ color: "#A9B29C" }}>
@@ -167,6 +173,15 @@ export default function Collection({ data, actions }) {
             const firstId = actions.addSpeciesBatch(list);
             setShowAddSpecies(false);
             if (firstId) setOpenId(firstId);
+          }} />
+      )}
+      {showImport && (
+        <ImportModal existingNames={species.map((s) => s.name)}
+          onClose={() => setShowImport(false)}
+          onImport={(list, opts) => {
+            const result = actions.importSpecies(list, opts);
+            if (result.firstId) setOpenId(result.firstId);
+            return result;
           }} />
       )}
       {editSpecies && (

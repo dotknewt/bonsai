@@ -12,7 +12,7 @@ export default function ExportModal({ title, text, onClose }) {
   return (
     <ModalShell title={title} onClose={onClose}>
       <p className="text-[12px] mb-2" style={{ color: "#A9B29C" }}>
-        Send this to someone else — they paste it into "Add species" → the import box to bring it into their own almanac. Nothing here is linked back to your data.
+        Send this to someone else — they can bring it in via Collection → "Import" (a single species also pastes fine into "Add species"). Nothing here is linked back to your data.
       </p>
       <textarea readOnly value={text} rows={10} onFocus={(e) => e.target.select()}
         className="w-full px-3 py-2 rounded-lg text-[11px] font-mono resize-none" style={inputStyle} />
