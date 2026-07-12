@@ -1,7 +1,7 @@
 /* ---------- seed data (Norwegian-shifted timing) ---------- */
 export const SEED_SPECIES = [{
   id: "juniper-juniperus-procumbens",
-  name: "Japanese Garden Juniper",
+  name: "Juniper",
   botanicalName: "Juniperus procumbens",
   // Care windows adapted from the Bonsai4me Juniperus species guide, shifted ~3-4 weeks for Norway.
   tasks: [
@@ -113,5 +113,23 @@ export const SEED_SPECIES = [{
     { id: "t10", title: "Autumn colour & seed sowing", startMonth: 9, startDay: 25, endMonth: 10, endDay: 31, category: "seed", description: "Foliage turns yellow to orange-brown and often stays on through winter. Sow fresh beechmast outdoors now for natural stratification." },
     { id: "t11", title: "Start winter seed stratification", startMonth: 11, startDay: 15, endMonth: 12, endDay: 31, category: "seed", description: "If seed wasn't sown outdoors in autumn, begin cold-stratifying it indoors for a spring sowing." },
     { id: "t12", title: "Late-winter hard pruning window", startMonth: 2, startDay: 15, endMonth: 3, endDay: 20, category: "prune", description: "The alternative to midsummer hard pruning — do this before spring growth resumes." },
+  ],
+}, {
+  id: "maple-acer-platanoides",
+  name: "Norway Maple",
+  botanicalName: "Acer platanoides",
+  tasks: [
+    { id: "nm1", title: "Repot before bud break", startMonth: 4, startDay: 20, endMonth: 5, endDay: 10, category: "repot", description: "Repot in a free-draining mix (e.g. 2 akadama : 1 bark : 1 pumice) before buds swell, with up to a third root reduction on established trees. Unlike top growth, roots don't bleed when cut, so this is a good window to combine repotting with a structural cut. Go by bud movement, not the date." },
+    { id: "nm2", title: "Biweekly balanced feed", startMonth: 5, startDay: 10, endMonth: 8, endDay: 20, category: "feed", description: "Feed every two weeks from spring leaf-out to late summer with a balanced, low-nitrogen fertiliser. Ease off early feed on refined trees to keep growth fine — this is a vigorous species that coarsens fast if pushed." },
+    { id: "nm3", title: "Dormant structural pruning", startMonth: 3, startDay: 1, endMonth: 4, endDay: 5, category: "prune", description: "Make large structural cuts while fully dormant, before sap starts moving — Norway maple bleeds heavily from top cuts made once growth begins. Late summer is the other safe window if you miss this one; avoid late spring/early summer entirely." },
+    { id: "nm4", title: "Cutback to two nodes", startMonth: 6, startDay: 1, endMonth: 7, endDay: 10, category: "prune", description: "Once a shoot has made 5–6 nodes, cut back to the last two to build ramification. Pinch the apex on mature trees to encourage lower, finer branching — it buds back willingly." },
+    { id: "nm5", title: "Leaf-cut for size reduction", startMonth: 7, startDay: 5, endMonth: 8, endDay: 5, category: "prune", description: "Leaf-cutting now prompts fresh budding and modestly smaller leaves, but expect only around 50% reduction — this species suits a medium-to-large bonsai rather than fine refinement. Only do this on strong, healthy trees." },
+    { id: "nm6", title: "Wire young shoots", startMonth: 5, startDay: 20, endMonth: 7, endDay: 15, category: "wire", description: "Wire while shoots are still soft and green — the wood stiffens and gets brittle fast. Check often, since vigorous growth thickens branches quickly and wire can bite in within weeks." },
+    { id: "nm7", title: "Watch for verticillium & aphids", startMonth: 5, startDay: 15, endMonth: 9, endDay: 15, category: "pest", description: "Verticillium wilt is the serious risk here — soil-borne, often fatal, and untreatable, so disinfect tools between trees. Otherwise watch for aphids on foliage and mild anthracnose after a cool wet spring, which the tree usually shrugs off." },
+    { id: "nm8", title: "Air-layer or take cuttings", startMonth: 6, startDay: 1, endMonth: 6, endDay: 30, category: "propagate", description: "Air-layer as spring growth hardens, or take cuttings — both work reasonably well on this species. It also self-seeds prolifically if you'd rather grow fresh material from seed." },
+    { id: "nm9", title: "Collect & sow seed outdoors", startMonth: 9, startDay: 15, endMonth: 10, endDay: 31, category: "seed", description: "Collect seed in autumn and sow outdoors to stratify naturally over winter. Seed needs an obligate 90–120 days of cold, moist stratification around 3–4°C before it will germinate." },
+    { id: "nm10", title: "Cold-stratify indoors if unsown", startMonth: 11, startDay: 15, endMonth: 12, endDay: 31, category: "seed", description: "If seed wasn't sown outdoors in autumn, start cold-moist stratification indoors (around 3–4°C) now for a spring sowing — it needs the full 90–120 days before it will break dormancy." },
+    { id: "nm11", title: "Summer positioning & watering", startMonth: 5, startDay: 1, endMonth: 9, endDay: 15, category: "other", description: "Give morning or evening sun but shade at the height of summer — the foliage scorches more easily than it looks. Keep soil moist but not wet; this species is prone to root rot in poorly-drained mix." },
+    { id: "nm12", title: "Winter root protection", startMonth: 11, startDay: 1, endMonth: 3, endDay: 1, category: "other", description: "Extremely cold-hardy as a landscape tree — it grows as far north as Tromsø, well above the Arctic Circle — but a potted rootball freezes far harder than ground soil. Mulch or shelter the pot through the coldest stretch of winter." },
   ],
 }];
