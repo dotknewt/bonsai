@@ -1,14 +1,16 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Check, Sprout } from "lucide-react";
 import { CATS } from "../lib/categories.js";
 import { seasonLabel, windowStatus, fmtDate, fmtWindow, daysUntilText, sortTasksByStart } from "../lib/dates.js";
 import { Badge, SpeciesChips, EmptyBench } from "../components/ui.jsx";
+import TaskDetailModal from "../components/TaskDetailModal.jsx";
 
 /* The bench dashboard: every upcoming care window across the collection, plus
    one species' full care plan with check-offs. Read-only over species data —
    adding and editing happens in the Collection tool. */
 export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
   const { species, completions, specimensBySpecies, year } = data;
+  const [taskDetail, setTaskDetail] = useState(null); // { speciesId, task }
 
   const treeNames = (speciesId) => (specimensBySpecies[speciesId] || []).map((x) => x.nickname).join(", ");
 
@@ -27,6 +29,7 @@ export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
 
   // a stale id (species deleted in the Collection) falls back to the first
   const active = species.find((s) => s.id === activeId) ?? species[0] ?? null;
+  const detailSpecies = taskDetail ? species.find((s) => s.id === taskDetail.speciesId) : null;
   const activeTasks = active ? sortTasksByStart(active.tasks) : [];
   const activeTrees = active ? treeNames(active.id) : "";
 
@@ -51,24 +54,27 @@ export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
                     style={{ border: `1.5px solid ${row.done ? meta.color : "#4A5540"}`, background: row.done ? meta.color : "transparent" }}>
                     {row.done && <Check size={12} color="#1F2A1C" aria-hidden="true" />}
                   </button>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[13px] truncate" style={{ opacity: row.done ? 0.5 : 1, textDecoration: row.done ? "line-through" : "none" }}>{row.task.title}</div>
-                    <div className="text-[11px] truncate" style={{ color: "#8A9483" }}>
-                      {row.speciesName}{trees ? ` · ${trees}` : ""} · {seasonLabel(row.start.getMonth() + 1)}
-                    </div>
-                  </div>
-                  <div className="text-right shrink-0" style={{ fontFamily: "IBM Plex Mono, monospace" }}>
-                    {row.open ? (
-                      <>
-                        <div className="text-[12px]" style={{ color: "#8FA876" }}>Open now</div>
-                        <div className="text-[11px]" style={{ color: "#A9B29C" }}>until {fmtDate(row.end)}</div>
-                      </>
-                    ) : (
-                      <div className="text-[12px]" style={{ color: soon ? "#D9A441" : "#A9B29C" }}>
-                        {daysUntilText(row.start)}
+                  <button onClick={() => setTaskDetail({ speciesId: row.speciesId, task: row.task })}
+                    className="flex-1 min-w-0 flex items-center gap-3 text-left">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[13px] truncate" style={{ opacity: row.done ? 0.5 : 1, textDecoration: row.done ? "line-through" : "none" }}>{row.task.title}</div>
+                      <div className="text-[11px] truncate" style={{ color: "#8A9483" }}>
+                        {row.speciesName}{trees ? ` · ${trees}` : ""} · {seasonLabel(row.start.getMonth() + 1)}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                    <div className="text-right shrink-0" style={{ fontFamily: "IBM Plex Mono, monospace" }}>
+                      {row.open ? (
+                        <>
+                          <div className="text-[12px]" style={{ color: "#8FA876" }}>Open now</div>
+                          <div className="text-[11px]" style={{ color: "#A9B29C" }}>until {fmtDate(row.end)}</div>
+                        </>
+                      ) : (
+                        <div className="text-[12px]" style={{ color: soon ? "#D9A441" : "#A9B29C" }}>
+                          {daysUntilText(row.start)}
+                        </div>
+                      )}
+                    </div>
+                  </button>
                 </div>
               );
             })}
@@ -119,7 +125,8 @@ export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
                       style={{ border: `1.5px solid ${done ? (CATS[t.category] || CATS.other).color : "#4A5540"}`, background: done ? (CATS[t.category] || CATS.other).color : "transparent" }}>
                       {done && <Check size={12} color="#1F2A1C" aria-hidden="true" />}
                     </button>
-                    <div className="flex-1 min-w-0">
+                    <button onClick={() => setTaskDetail({ speciesId: active.id, task: t })}
+                      className="flex-1 min-w-0 text-left">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[13px]" style={{ opacity: done ? 0.5 : 1, textDecoration: done ? "line-through" : "none" }}>{t.title}</span>
                         <Badge category={t.category} />
@@ -129,7 +136,7 @@ export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
                         {seasonLabel(t.startMonth)} · {fmtWindow(st)}
                         {st.open && <span style={{ color: "#8FA876" }}> · open now</span>}
                       </p>
-                    </div>
+                    </button>
                   </div>
                 </div>
               );
@@ -139,6 +146,16 @@ export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
             )}
           </div>
         </div>
+      )}
+
+      {taskDetail && detailSpecies && (
+        <TaskDetailModal task={taskDetail.task}
+          speciesName={detailSpecies.name}
+          trees={treeNames(taskDetail.speciesId)}
+          year={year}
+          done={!!completions[`${taskDetail.speciesId}:${taskDetail.task.id}:${year}`]}
+          onToggleDone={() => actions.toggleDone(taskDetail.speciesId, taskDetail.task.id)}
+          onClose={() => setTaskDetail(null)} />
       )}
     </>
   );

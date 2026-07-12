@@ -5,6 +5,7 @@ import { toExportObject } from "../lib/storage.js";
 import { Badge, ConfirmButton, EmptyBench } from "../components/ui.jsx";
 import AddSpeciesModal, { EditSpeciesModal } from "../components/SpeciesModal.jsx";
 import TaskModal from "../components/TaskModal.jsx";
+import TaskDetailModal from "../components/TaskDetailModal.jsx";
 import ExportModal from "../components/ExportModal.jsx";
 import ImportModal from "../components/ImportModal.jsx";
 import SpecimenModal from "../components/SpecimenModal.jsx";
@@ -15,12 +16,13 @@ const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
    from here — the Almanac and Wheel only read it. Also home to "my trees",
    the actual specimens on the bench, linked to their species. */
 export default function Collection({ data, actions }) {
-  const { species, specimensBySpecies } = data;
+  const { species, specimensBySpecies, completions, year } = data;
   const [openId, setOpenId] = useState(null);
   const [showAddSpecies, setShowAddSpecies] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [editSpecies, setEditSpecies] = useState(null);   // species being renamed
   const [taskModal, setTaskModal] = useState(null);       // { speciesId, task|null }
+  const [taskDetail, setTaskDetail] = useState(null);     // { species, task }
   const [specimenModal, setSpecimenModal] = useState(null); // { species, specimen|null }
   const [exportPayload, setExportPayload] = useState(null); // { title, text }
 
@@ -93,7 +95,8 @@ export default function Collection({ data, actions }) {
                       <div className="space-y-1.5">
                         {tasks.map((t) => (
                           <div key={t.id} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "#1F2A1C" }}>
-                            <div className="flex-1 min-w-0">
+                            <button onClick={() => setTaskDetail({ species: s, task: t })}
+                              className="flex-1 min-w-0 text-left">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-[13px]">{t.title}</span>
                                 <Badge category={t.category} />
@@ -101,7 +104,7 @@ export default function Collection({ data, actions }) {
                               <p className="text-[11px] mt-0.5" style={{ color: "#6E7A64", fontFamily: "IBM Plex Mono, monospace" }}>
                                 {seasonLabel(t.startMonth)} · {fmtWindow(windowStatus(t))}
                               </p>
-                            </div>
+                            </button>
                             <button onClick={() => setTaskModal({ speciesId: s.id, task: t })}
                               aria-label={`Edit task: ${t.title}`} title="Edit"
                               className="p-1 rounded hover:bg-white/10 transition" style={{ color: "#A9B29C" }}>
@@ -195,6 +198,16 @@ export default function Collection({ data, actions }) {
             else actions.addTask(taskModal.speciesId, task);
             setTaskModal(null);
           }} />
+      )}
+      {taskDetail && (
+        <TaskDetailModal task={taskDetail.task}
+          speciesName={taskDetail.species.name}
+          trees={(specimensBySpecies[taskDetail.species.id] || []).map((x) => x.nickname).join(", ")}
+          year={year}
+          done={!!completions[`${taskDetail.species.id}:${taskDetail.task.id}:${year}`]}
+          onToggleDone={() => actions.toggleDone(taskDetail.species.id, taskDetail.task.id)}
+          onEdit={() => { setTaskModal({ speciesId: taskDetail.species.id, task: taskDetail.task }); setTaskDetail(null); }}
+          onClose={() => setTaskDetail(null)} />
       )}
       {specimenModal && (
         <SpecimenModal initial={specimenModal.specimen} speciesName={specimenModal.species.name}
