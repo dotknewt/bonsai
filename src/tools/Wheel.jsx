@@ -79,16 +79,18 @@ function OverlapView({ speciesList, enabledCats, onToggleCat }) {
     [allTasks]
   );
 
-  const visibleTasks = allTasks.filter((t) => enabledCats.includes(catOf(t)));
+  // same semantics as the single-species view: no chips on = everything shows
+  const effectiveCats = enabledCats.length ? enabledCats.filter((c) => presentCats.includes(c)) : presentCats;
+  const visibleTasks = allTasks.filter((t) => effectiveCats.includes(catOf(t)));
 
-  const overlapsByCat = useMemo(() => enabledCats
+  const overlapsByCat = useMemo(() => effectiveCats
     .map((cat) => ({
       cat,
       ranges: overlapRanges(visibleTasks.filter((t) => catOf(t) === cat)),
     }))
     .filter((x) => x.ranges.length)
     .sort((a, b) => a.ranges[0].start - b.ranges[0].start),
-  [enabledCats.join(","), allTasks]); // eslint-disable-line react-hooks/exhaustive-deps
+  [effectiveCats.join(","), allTasks]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const nameOf = (id) => speciesList.find((s) => s.id === id)?.name || id;
   const today = new Date();
@@ -112,6 +114,9 @@ function OverlapView({ speciesList, enabledCats, onToggleCat }) {
 
       {/* task-type filter chips */}
       <CategoryChips cats={presentCats} enabled={enabledCats} onToggle={onToggleCat} />
+      <p className="text-[11px] mt-1" style={{ color: "#6E7A64" }}>
+        Tap a task type to filter — with none on, everything shows.
+      </p>
 
       <div className="mt-4"><SeasonRing tasks={visibleTasks} overlays={overlays} speciesOrder={speciesList} /></div>
       <p className="text-[11px] mt-1 text-center" style={{ color: "#6E7A64" }}>
@@ -119,9 +124,7 @@ function OverlapView({ speciesList, enabledCats, onToggleCat }) {
       </p>
 
       <div className="mt-5 space-y-4">
-        {enabledCats.length === 0 ? (
-          <p className="text-sm" style={{ color: "#A9B29C" }}>Turn on a task type above to compare its timing.</p>
-        ) : overlapsByCat.length === 0 ? (
+        {overlapsByCat.length === 0 ? (
           <p className="text-sm" style={{ color: "#A9B29C" }}>
             No overlapping windows for the selected task types — these species' timings don't coincide.
           </p>

@@ -43,8 +43,9 @@ export default function Collection({ data, actions }) {
               </button>
             )}
             <button onClick={() => setShowAddSpecies(true)}
-              className="flex items-center gap-1 text-[11px]" style={{ color: "#D9A441" }}>
-              <Plus size={12} /> Add species
+              className="flex items-center gap-1 text-[12px] font-medium px-3 py-1.5 rounded-lg"
+              style={{ background: "#D9A441", color: "#1F2A1C" }}>
+              <Plus size={13} /> Add species
             </button>
           </div>
         </div>
@@ -90,42 +91,8 @@ export default function Collection({ data, actions }) {
                         </div>
                       </div>
 
-                      {/* care tasks */}
-                      <h4 className="text-[11px] tracking-wide uppercase mt-3 mb-2" style={{ color: "#8A9483", fontFamily: "IBM Plex Mono, monospace" }}>Care tasks</h4>
-                      <div className="space-y-1.5">
-                        {tasks.map((t) => (
-                          <div key={t.id} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "#1F2A1C" }}>
-                            <button onClick={() => setTaskDetail({ species: s, task: t })}
-                              className="flex-1 min-w-0 text-left">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-[13px]">{t.title}</span>
-                                <Badge category={t.category} />
-                              </div>
-                              <p className="text-[11px] mt-0.5" style={{ color: "#6E7A64", fontFamily: "IBM Plex Mono, monospace" }}>
-                                {seasonLabel(t.startMonth)} · {fmtWindow(windowStatus(t))}
-                              </p>
-                            </button>
-                            <button onClick={() => setTaskModal({ speciesId: s.id, task: t })}
-                              aria-label={`Edit task: ${t.title}`} title="Edit"
-                              className="p-1 rounded hover:bg-white/10 transition" style={{ color: "#A9B29C" }}>
-                              <Pencil size={14} />
-                            </button>
-                            <ConfirmButton onConfirm={() => actions.removeTask(s.id, t.id)} label={`Delete task: ${t.title}`} />
-                          </div>
-                        ))}
-                        {tasks.length === 0 && (
-                          <p className="text-[12px]" style={{ color: "#6E7A64" }}>No care tasks yet.</p>
-                        )}
-                      </div>
-                      <button onClick={() => setTaskModal({ speciesId: s.id, task: null })}
-                        aria-label={`Add a care task for ${s.name}`}
-                        className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px]"
-                        style={{ border: "1px dashed #4A5540", color: "#A9B29C" }}>
-                        <Plus size={13} aria-hidden="true" /> Add a care task
-                      </button>
-
                       {/* the user's actual trees of this species */}
-                      <h4 className="text-[11px] tracking-wide uppercase mt-4 mb-2" style={{ color: "#8A9483", fontFamily: "IBM Plex Mono, monospace" }}>My trees</h4>
+                      <h4 className="text-[11px] tracking-wide uppercase mt-3 mb-2" style={{ color: "#8A9483", fontFamily: "IBM Plex Mono, monospace" }}>My trees</h4>
                       <div className="space-y-1.5">
                         {trees.map((x) => (
                           <div key={x.id} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "#1F2A1C" }}>
@@ -156,6 +123,40 @@ export default function Collection({ data, actions }) {
                         className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px]"
                         style={{ border: "1px dashed #4A5540", color: "#A9B29C" }}>
                         <Plus size={13} aria-hidden="true" /> Add a tree
+                      </button>
+
+                      {/* care tasks */}
+                      <h4 className="text-[11px] tracking-wide uppercase mt-4 mb-2" style={{ color: "#8A9483", fontFamily: "IBM Plex Mono, monospace" }}>Care tasks</h4>
+                      <div className="space-y-1.5">
+                        {tasks.map((t) => (
+                          <div key={t.id} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "#1F2A1C" }}>
+                            <button onClick={() => setTaskDetail({ species: s, task: t })}
+                              className="flex-1 min-w-0 text-left">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-[13px]">{t.title}</span>
+                                <Badge category={t.category} />
+                              </div>
+                              <p className="text-[11px] mt-0.5" style={{ color: "#6E7A64", fontFamily: "IBM Plex Mono, monospace" }}>
+                                {seasonLabel(t.startMonth)} · {fmtWindow(windowStatus(t))}
+                              </p>
+                            </button>
+                            <button onClick={() => setTaskModal({ speciesId: s.id, task: t })}
+                              aria-label={`Edit task: ${t.title}`} title="Edit"
+                              className="p-1 rounded hover:bg-white/10 transition" style={{ color: "#A9B29C" }}>
+                              <Pencil size={14} />
+                            </button>
+                            <ConfirmButton onConfirm={() => actions.removeTask(s.id, t.id)} label={`Delete task: ${t.title}`} />
+                          </div>
+                        ))}
+                        {tasks.length === 0 && (
+                          <p className="text-[12px]" style={{ color: "#6E7A64" }}>No care tasks yet.</p>
+                        )}
+                      </div>
+                      <button onClick={() => setTaskModal({ speciesId: s.id, task: null })}
+                        aria-label={`Add a care task for ${s.name}`}
+                        className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px]"
+                        style={{ border: "1px dashed #4A5540", color: "#A9B29C" }}>
+                        <Plus size={13} aria-hidden="true" /> Add a care task
                       </button>
                     </div>
                   )}

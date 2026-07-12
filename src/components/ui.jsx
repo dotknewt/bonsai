@@ -75,7 +75,8 @@ export function CategoryChips({ cats, enabled, onToggle }) {
               border: `1px solid ${on ? meta.color : "#3A4830"}`,
               fontFamily: "IBM Plex Mono, monospace",
             }}>
-            <Icon size={11} /> {meta.label}
+            {/* icon keeps its category color even when off, so the chips double as the wheel's legend */}
+            <Icon size={11} color={meta.color} /> {meta.label}
           </button>
         );
       })}
