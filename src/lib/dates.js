@@ -69,6 +69,18 @@ export function fmtDate(d) {
   return d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
+/* "YYYY-MM-DD" (an <input type="date"> value) → local date with year.
+   Parsed by parts — new Date(string) would read it as UTC midnight and show
+   the previous day west of Greenwich. */
+export function fmtISODate(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+}
+
+export function sortTasksByStart(tasks) {
+  return [...tasks].sort((a, b) => (a.startMonth - b.startMonth) || (a.startDay - b.startDay));
+}
+
 export function fmtWindow(status) {
   return `${fmtDate(status.start)} – ${fmtDate(status.end)}`;
 }

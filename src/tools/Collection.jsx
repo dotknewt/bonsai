@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Plus, Share2, Pencil, ChevronDown, Sprout } from "lucide-react";
-import { seasonLabel, windowStatus, fmtWindow, fmtDate } from "../lib/dates.js";
+import { Plus, Share2, Pencil, ChevronDown } from "lucide-react";
+import { seasonLabel, windowStatus, fmtWindow, fmtISODate, sortTasksByStart } from "../lib/dates.js";
 import { toExportObject } from "../lib/storage.js";
-import { Badge, ConfirmButton } from "../components/ui.jsx";
+import { Badge, ConfirmButton, EmptyBench } from "../components/ui.jsx";
 import AddSpeciesModal, { EditSpeciesModal } from "../components/SpeciesModal.jsx";
 import TaskModal from "../components/TaskModal.jsx";
 import ExportModal from "../components/ExportModal.jsx";
@@ -14,15 +14,13 @@ const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
    from here — the Almanac and Wheel only read it. Also home to "my trees",
    the actual specimens on the bench, linked to their species. */
 export default function Collection({ data, actions }) {
-  const { species, specimens } = data;
+  const { species, specimensBySpecies } = data;
   const [openId, setOpenId] = useState(null);
   const [showAddSpecies, setShowAddSpecies] = useState(false);
   const [editSpecies, setEditSpecies] = useState(null);   // species being renamed
   const [taskModal, setTaskModal] = useState(null);       // { speciesId, task|null }
   const [specimenModal, setSpecimenModal] = useState(null); // { species, specimen|null }
   const [exportPayload, setExportPayload] = useState(null); // { title, text }
-
-  const treesOf = (speciesId) => specimens.filter((x) => x.speciesId === speciesId);
 
   return (
     <>
@@ -43,25 +41,12 @@ export default function Collection({ data, actions }) {
           </div>
         </div>
 
-        {species.length === 0 ? (
-          <div className="mt-4 rounded-2xl px-5 py-7 text-center" style={{ background: "#26331F", border: "1px solid #3A4830" }}>
-            <Sprout className="mx-auto mb-3" size={28} color="#8FA876" aria-hidden="true" />
-            <h3 className="font-display text-[20px]">Your bench is empty</h3>
-            <p className="text-[13px] mt-1.5" style={{ color: "#A9B29C" }}>
-              Add your first bonsai to start planning seasonal care.
-            </p>
-            <button onClick={() => setShowAddSpecies(true)}
-              className="mt-4 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium"
-              style={{ background: "#D9A441", color: "#1F2A1C" }}>
-              <Plus size={14} aria-hidden="true" /> Add your first species
-            </button>
-          </div>
-        ) : (
+        {species.length > 0 && (
           <div className="space-y-2">
             {species.map((s) => {
               const open = openId === s.id;
-              const trees = treesOf(s.id);
-              const tasks = [...s.tasks].sort((a, b) => (a.startMonth - b.startMonth) || (a.startDay - b.startDay));
+              const trees = specimensBySpecies[s.id] || [];
+              const tasks = open ? sortTasksByStart(s.tasks) : [];
               return (
                 <div key={s.id} className="rounded-xl" style={{ background: "#26331F" }}>
                   <button onClick={() => setOpenId(open ? null : s.id)} aria-expanded={open}
@@ -139,7 +124,7 @@ export default function Collection({ data, actions }) {
                               <div className="text-[13px] truncate">{x.nickname}</div>
                               {(x.acquiredDate || x.notes) && (
                                 <p className="text-[11px] mt-0.5" style={{ color: "#8A9483" }}>
-                                  {x.acquiredDate && <span style={{ fontFamily: "IBM Plex Mono, monospace" }}>since {fmtDate(new Date(x.acquiredDate))}</span>}
+                                  {x.acquiredDate && <span style={{ fontFamily: "IBM Plex Mono, monospace" }}>since {fmtISODate(x.acquiredDate)}</span>}
                                   {x.acquiredDate && x.notes && " · "}
                                   {x.notes}
                                 </p>
@@ -171,6 +156,10 @@ export default function Collection({ data, actions }) {
           </div>
         )}
       </div>
+
+      {species.length === 0 && (
+        <EmptyBench ctaLabel="Add your first species" ctaIcon={Plus} onCta={() => setShowAddSpecies(true)} />
+      )}
 
       {showAddSpecies && (
         <AddSpeciesModal onClose={() => setShowAddSpecies(false)}

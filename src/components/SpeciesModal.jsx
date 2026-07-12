@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Upload, BookOpen } from "lucide-react";
-import ModalShell, { inputStyle } from "./ModalShell.jsx";
+import ModalShell, { inputStyle, SubmitButton } from "./ModalShell.jsx";
 import FormatGuide from "../FormatGuide.jsx";
 
 export default function AddSpeciesModal({ onClose, onAdd }) {
@@ -56,10 +56,9 @@ export default function AddSpeciesModal({ onClose, onAdd }) {
           <p className="text-[11px] mt-1" style={{ color: "#6E7A64" }}>Paste something someone shared via "Export" — or ask Claude to research a species (e.g. from bonsai4me) and hand you ready-to-paste task data.</p>
           {error && <p className="text-[11px] mt-1" style={{ color: "#D97757" }}>{error}</p>}
         </div>
-        <button disabled={!name.trim() && !importText.trim()} onClick={submit}
-          className="w-full py-2.5 rounded-lg text-sm font-medium disabled:opacity-40" style={{ background: "#D9A441", color: "#1F2A1C" }}>
+        <SubmitButton disabled={!name.trim() && !importText.trim()} onClick={submit}>
           Add species
-        </button>
+        </SubmitButton>
       </div>
       {showFormat && <FormatGuide onClose={() => setShowFormat(false)} />}
     </ModalShell>
@@ -84,10 +83,9 @@ export function EditSpeciesModal({ species, onSave, onClose }) {
           <input value={botanicalName} onChange={(e) => setBotanicalName(e.target.value)}
             className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
         </div>
-        <button disabled={!name.trim()} onClick={() => onSave({ name: name.trim(), botanicalName: botanicalName.trim() })}
-          className="w-full py-2.5 rounded-lg text-sm font-medium disabled:opacity-40" style={{ background: "#D9A441", color: "#1F2A1C" }}>
+        <SubmitButton disabled={!name.trim()} onClick={() => onSave({ name: name.trim(), botanicalName: botanicalName.trim() })}>
           Save changes
-        </button>
+        </SubmitButton>
       </div>
     </ModalShell>
   );

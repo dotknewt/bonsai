@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Copy } from "lucide-react";
-import ModalShell, { inputStyle } from "./ModalShell.jsx";
+import ModalShell, { inputStyle, SubmitButton } from "./ModalShell.jsx";
 
 export default function ExportModal({ title, text, onClose }) {
   const [status, setStatus] = useState("");
@@ -16,9 +16,9 @@ export default function ExportModal({ title, text, onClose }) {
       </p>
       <textarea readOnly value={text} rows={10} onFocus={(e) => e.target.select()}
         className="w-full px-3 py-2 rounded-lg text-[11px] font-mono resize-none" style={inputStyle} />
-      <button onClick={copy} className="mt-3 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium" style={{ background: "#D9A441", color: "#1F2A1C" }}>
+      <SubmitButton onClick={copy} className="mt-3 flex items-center justify-center gap-1.5">
         <Copy size={14} /> {status || "Copy to clipboard"}
-      </button>
+      </SubmitButton>
     </ModalShell>
   );
 }

@@ -18,6 +18,17 @@ export default function ModalShell({ title, onClose, children }) {
 
 export const inputStyle = { background: "#1F2A1C", border: "1px solid #3A4830", color: "#EDE6D6" };
 
+/* the gold primary action every modal ends with */
+export function SubmitButton({ disabled = false, onClick, className = "", children }) {
+  return (
+    <button disabled={disabled} onClick={onClick}
+      className={`w-full py-2.5 rounded-lg text-sm font-medium disabled:opacity-40 ${className}`}
+      style={{ background: "#D9A441", color: "#1F2A1C" }}>
+      {children}
+    </button>
+  );
+}
+
 export function MonthDayRow({ label, month, day, onMonth, onDay }) {
   return (
     <div>

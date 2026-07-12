@@ -1,27 +1,16 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import { Check, Sprout } from "lucide-react";
 import { CATS } from "../lib/categories.js";
-import { seasonLabel, windowStatus, fmtDate, fmtWindow, daysUntilText } from "../lib/dates.js";
-import { Badge } from "../components/ui.jsx";
+import { seasonLabel, windowStatus, fmtDate, fmtWindow, daysUntilText, sortTasksByStart } from "../lib/dates.js";
+import { Badge, SpeciesChips, EmptyBench } from "../components/ui.jsx";
 
 /* The bench dashboard: every upcoming care window across the collection, plus
    one species' full care plan with check-offs. Read-only over species data —
    adding and editing happens in the Collection tool. */
-export default function Almanac({ data, actions }) {
-  const { species, completions, specimens, year } = data;
-  const [activeId, setActiveId] = useState(species[0]?.id ?? null);
+export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
+  const { species, completions, specimensBySpecies, year } = data;
 
-  // keep a valid selection if the collection changes underneath us
-  useEffect(() => {
-    if (activeId && !species.some((s) => s.id === activeId)) setActiveId(species[0]?.id ?? null);
-  }, [species, activeId]);
-
-  const treesBySpecies = useMemo(() => {
-    const m = {};
-    specimens.forEach((x) => { (m[x.speciesId] ||= []).push(x); });
-    return m;
-  }, [specimens]);
-  const treeNames = (speciesId) => (treesBySpecies[speciesId] || []).map((x) => x.nickname).join(", ");
+  const treeNames = (speciesId) => (specimensBySpecies[speciesId] || []).map((x) => x.nickname).join(", ");
 
   const allUpcoming = useMemo(() => {
     const rows = [];
@@ -36,8 +25,10 @@ export default function Almanac({ data, actions }) {
     }).slice(0, 10);
   }, [species, completions, year]);
 
-  const active = species.find((s) => s.id === activeId) || null;
-  const activeTasks = active ? [...active.tasks].sort((a, b) => (a.startMonth - b.startMonth) || (a.startDay - b.startDay)) : [];
+  // a stale id (species deleted in the Collection) falls back to the first
+  const active = species.find((s) => s.id === activeId) ?? species[0] ?? null;
+  const activeTasks = active ? sortTasksByStart(active.tasks) : [];
+  const activeTrees = active ? treeNames(active.id) : "";
 
   return (
     <>
@@ -94,40 +85,14 @@ export default function Almanac({ data, actions }) {
             <Sprout size={12} /> Manage collection
           </button>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {species.map((s) => {
-            const isSel = s.id === activeId;
-            return (
-              <button key={s.id} onClick={() => setActiveId(s.id)}
-                aria-pressed={isSel}
-                className="shrink-0 px-3 py-2 rounded-xl text-left transition"
-                style={{ background: isSel ? "#EDE6D6" : "#26331F", color: isSel ? "#1F2A1C" : "#EDE6D6", minWidth: 130 }}>
-                <div className="text-[13px] font-medium leading-tight">{s.name}</div>
-                <div className="text-[11px] italic" style={{ opacity: 0.65, fontFamily: "Fraunces, serif" }}>{s.botanicalName}</div>
-              </button>
-            );
-          })}
-        </div>
-        {species.length > 1 && (
-          <p className="text-[11px] mt-1" style={{ color: "#6E7A64" }}>
-            Tap a species to see its full care plan for the year.
-          </p>
-        )}
+        <SpeciesChips species={species}
+          isSelected={(s) => s.id === active?.id}
+          onTap={(s) => onSelectSpecies(s.id)}
+          hint="Tap a species to see its full care plan for the year." />
       </div>
 
       {species.length === 0 && (
-        <div className="mx-5 mt-8 rounded-2xl px-5 py-7 text-center" style={{ background: "#26331F", border: "1px solid #3A4830" }}>
-          <Sprout className="mx-auto mb-3" size={28} color="#8FA876" aria-hidden="true" />
-          <h3 className="font-display text-[20px]">Your bench is empty</h3>
-          <p className="text-[13px] mt-1.5" style={{ color: "#A9B29C" }}>
-            Add your first bonsai to start planning seasonal care.
-          </p>
-          <button onClick={() => actions.navigate("/collection")}
-            className="mt-4 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium"
-            style={{ background: "#D9A441", color: "#1F2A1C" }}>
-            <Sprout size={14} aria-hidden="true" /> Open the Collection
-          </button>
-        </div>
+        <EmptyBench ctaLabel="Open the Collection" ctaIcon={Sprout} onCta={() => actions.navigate("/collection")} />
       )}
 
       {/* active species care plan */}
@@ -136,8 +101,8 @@ export default function Almanac({ data, actions }) {
           <div>
             <h3 className="font-display text-[20px]">{active.name}</h3>
             <p className="text-[12px] italic" style={{ color: "#A9B29C", fontFamily: "Fraunces, serif" }}>{active.botanicalName}</p>
-            {treeNames(active.id) && (
-              <p className="text-[11px] mt-1" style={{ color: "#8A9483" }}>Your trees: {treeNames(active.id)}</p>
+            {activeTrees && (
+              <p className="text-[11px] mt-1" style={{ color: "#8A9483" }}>Your trees: {activeTrees}</p>
             )}
           </div>
 

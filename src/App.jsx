@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Loader2, ListChecks, Orbit, Sprout } from "lucide-react";
 import { useHashRoute } from "./hooks/useHashRoute.js";
 import { KEYS, saveJSON, bootstrapData } from "./lib/storage.js";
@@ -9,9 +9,9 @@ import Wheel from "./tools/Wheel.jsx";
 import Collection from "./tools/Collection.jsx";
 
 const TABS = [
-  { path: "/almanac", label: "Almanac", icon: ListChecks, component: Almanac },
-  { path: "/wheel", label: "Wheel", icon: Orbit, component: Wheel },
-  { path: "/collection", label: "Collection", icon: Sprout, component: Collection },
+  { path: "/almanac", label: "Almanac", icon: ListChecks },
+  { path: "/wheel", label: "Wheel", icon: Orbit },
+  { path: "/collection", label: "Collection", icon: Sprout },
 ];
 
 /* ---------- app shell ---------- */
@@ -25,15 +25,30 @@ export default function App() {
   const [specimens, setSpecimens] = useState([]);
   const { path, navigate } = useHashRoute();
 
+  // per-tool UI state lives up here (the tools unmount on every tab switch)
+  // so a species selection or filter survives hopping between tools
+  const [almanacSpeciesId, setAlmanacSpeciesId] = useState(null);
+  const [wheelSelection, setWheelSelection] = useState([]);
+  const [wheelCats, setWheelCats] = useState([]);
+
   useEffect(() => {
     (async () => {
       const loaded = await bootstrapData();
       setSpecies(loaded.species);
       setCompletions(loaded.completions);
       setSpecimens(loaded.specimens);
+      setAlmanacSpeciesId(loaded.species[0]?.id ?? null);
+      setWheelSelection(loaded.species[0] ? [loaded.species[0].id] : []);
       setLoading(false);
     })();
   }, []);
+
+  const toggleWheelSpecies = (id) => {
+    setWheelSelection((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  };
+  const toggleWheelCat = (c) => {
+    setWheelCats((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
+  };
 
   const persistSpecies = async (next) => { setSpecies(next); await saveJSON(KEYS.species, next); };
   const persistCompletions = async (next) => { setCompletions(next); await saveJSON(KEYS.completions, next); };
@@ -49,9 +64,8 @@ export default function App() {
   const removeSpecies = (id) => {
     persistSpecies(species.filter((s) => s.id !== id));
     // a species' trees go with it
-    if (specimens.some((x) => x.speciesId === id)) {
-      persistSpecimens(specimens.filter((x) => x.speciesId !== id));
-    }
+    const keptSpecimens = specimens.filter((x) => x.speciesId !== id);
+    if (keptSpecimens.length !== specimens.length) persistSpecimens(keptSpecimens);
   };
   const removeTask = (speciesId, taskId) => {
     const next = species.map((s) => s.id === speciesId ? { ...s, tasks: s.tasks.filter((t) => t.id !== taskId) } : s);
@@ -102,6 +116,12 @@ export default function App() {
     persistSpecimens(specimens.filter((x) => x.id !== id));
   };
 
+  const specimensBySpecies = useMemo(() => {
+    const m = {};
+    specimens.forEach((x) => { (m[x.speciesId] ||= []).push(x); });
+    return m;
+  }, [specimens]);
+
   if (loading) {
     return (
       <div style={{ background: "#1F2A1C" }} className="min-h-screen flex items-center justify-center">
@@ -111,8 +131,7 @@ export default function App() {
   }
 
   const activeTab = TABS.find((t) => t.path === path) || TABS[0];
-  const Tool = activeTab.component;
-  const data = { species, completions, specimens, year };
+  const data = { species, completions, specimens, specimensBySpecies, year };
   const actions = {
     toggleDone, removeSpecies, removeTask, addTask, updateTask, updateSpecies,
     addSpeciesBatch, addSpecimen, updateSpecimen, removeSpecimen, navigate,
@@ -126,7 +145,16 @@ export default function App() {
         <p className="text-[13px] mt-1" style={{ color: "#A9B29C" }}>Care windows for your bonsai, tuned to Norway's seasons.</p>
       </div>
 
-      <Tool data={data} actions={actions} />
+      {activeTab.path === "/wheel" ? (
+        <Wheel data={data}
+          selectedIds={wheelSelection} onToggleSpecies={toggleWheelSpecies}
+          enabledCats={wheelCats} onToggleCat={toggleWheelCat} />
+      ) : activeTab.path === "/collection" ? (
+        <Collection data={data} actions={actions} />
+      ) : (
+        <Almanac data={data} actions={actions}
+          activeId={almanacSpeciesId} onSelectSpecies={setAlmanacSpeciesId} />
+      )}
 
       {/* tool switcher */}
       <nav aria-label="Tools" className="fixed bottom-0 left-0 right-0 z-40"

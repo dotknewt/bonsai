@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import ModalShell, { inputStyle } from "./ModalShell.jsx";
+import ModalShell, { inputStyle, SubmitButton } from "./ModalShell.jsx";
 
 /* Add or edit one of the user's actual trees. The species is fixed by where
    the dialog was opened from, so only the tree's own details are asked for. */
@@ -19,10 +19,9 @@ export default function SpecimenModal({ initial = null, speciesName, onSave, onC
         </div>
         <textarea placeholder="Notes — pot, styling plans, history… (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3}
           className="w-full px-3 py-2 rounded-lg text-sm resize-none" style={inputStyle} />
-        <button disabled={!nickname.trim()} onClick={() => onSave({ nickname: nickname.trim(), acquiredDate, notes: notes.trim() })}
-          className="w-full py-2.5 rounded-lg text-sm font-medium disabled:opacity-40" style={{ background: "#D9A441", color: "#1F2A1C" }}>
+        <SubmitButton disabled={!nickname.trim()} onClick={() => onSave({ nickname: nickname.trim(), acquiredDate, notes: notes.trim() })}>
           {initial ? "Save changes" : "Add tree"}
-        </button>
+        </SubmitButton>
       </div>
     </ModalShell>
   );

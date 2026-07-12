@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import ModalShell, { inputStyle, MonthDayRow } from "./ModalShell.jsx";
+import ModalShell, { inputStyle, MonthDayRow, SubmitButton } from "./ModalShell.jsx";
 import { CATS, defaultSpanDays } from "../lib/categories.js";
 import { REF_YEAR, dateFor } from "../lib/dates.js";
 
@@ -15,6 +15,11 @@ export default function TaskModal({ initial = null, onSave, onClose }) {
   const [endDay, setEndDay] = useState(initial?.endDay ?? 15);
   const [endTouched, setEndTouched] = useState(initial != null);
   const [description, setDescription] = useState(initial?.description ?? "");
+
+  // a cleared day field coerces to 0, which a save would silently clamp to
+  // day 1 — refuse to save until it holds a real day again
+  const dayOk = (d) => d >= 1 && d <= 31;
+  const daysValid = dayOk(startDay) && dayOk(endDay);
 
   // until the user edits the end date, keep it at the category's typical span
   useEffect(() => {
@@ -39,10 +44,9 @@ export default function TaskModal({ initial = null, onSave, onClose }) {
           onDay={(v) => { setEndTouched(true); setEndDay(v); }} />
         <textarea placeholder="Notes (optional)" value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
           className="w-full px-3 py-2 rounded-lg text-sm resize-none" style={inputStyle} />
-        <button disabled={!title.trim()} onClick={() => onSave({ title: title.trim(), startMonth, startDay, endMonth, endDay, category, description: description.trim() })}
-          className="w-full py-2.5 rounded-lg text-sm font-medium disabled:opacity-40" style={{ background: "#D9A441", color: "#1F2A1C" }}>
+        <SubmitButton disabled={!title.trim() || !daysValid} onClick={() => onSave({ title: title.trim(), startMonth, startDay, endMonth, endDay, category, description: description.trim() })}>
           {initial ? "Save changes" : "Add task"}
-        </button>
+        </SubmitButton>
       </div>
     </ModalShell>
   );

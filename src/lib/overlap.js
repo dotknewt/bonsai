@@ -9,7 +9,7 @@ export function doyOf(month, day) {
   return n + (clampDay(month, day) - 1);
 }
 
-export function monthDayFromDoy(doy) {
+function monthDayFromDoy(doy) {
   let m = 0, d = doy;
   while (d >= DAYS_IN_MONTH[m]) { d -= DAYS_IN_MONTH[m]; m++; }
   return { month: m + 1, day: d + 1 };
