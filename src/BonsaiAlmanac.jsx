@@ -579,7 +579,17 @@ export default function BonsaiAlmanac() {
   useEffect(() => {
     (async () => {
       let sp = await loadJSON("bonsai-species", null);
-      if (!sp) sp = SEED_SPECIES;
+      // seenIds tracks every default species id ever merged in, so species the
+      // user has removed on purpose don't come back when new defaults are added
+      const seenIds = await loadJSON("bonsai-seeded-species-ids", null);
+      if (!sp) {
+        sp = SEED_SPECIES;
+      } else {
+        const known = new Set(seenIds || sp.map((s) => s.id));
+        const newDefaults = SEED_SPECIES.filter((s) => !known.has(s.id) && !sp.some((existing) => existing.id === s.id));
+        if (newDefaults.length) sp = [...sp, ...newDefaults];
+      }
+      await saveJSON("bonsai-seeded-species-ids", SEED_SPECIES.map((s) => s.id));
       // migrate any legacy single-date tasks to windows
       sp = sp.map((s) => ({ ...s, tasks: (s.tasks || []).map(normalizeTask) }));
       await saveJSON("bonsai-species", sp);
