@@ -1,0 +1,150 @@
+import React, { useState, useEffect } from "react";
+import { Loader2, ListChecks, Orbit, Sprout } from "lucide-react";
+import { useHashRoute } from "./hooks/useHashRoute.js";
+import { KEYS, saveJSON, bootstrapData } from "./lib/storage.js";
+import { normalizeTask } from "./lib/dates.js";
+import { CATS } from "./lib/categories.js";
+import Almanac from "./tools/Almanac.jsx";
+import Wheel from "./tools/Wheel.jsx";
+import Collection from "./tools/Collection.jsx";
+
+const TABS = [
+  { path: "/almanac", label: "Almanac", icon: ListChecks, component: Almanac },
+  { path: "/wheel", label: "Wheel", icon: Orbit, component: Wheel },
+  { path: "/collection", label: "Collection", icon: Sprout, component: Collection },
+];
+
+/* ---------- app shell ---------- */
+/* Owns the shared data (species, completions, specimens) and every mutation;
+   the three tools receive it read-only plus the actions they're allowed to
+   call. Navigation is hash-based so each tool has its own address. */
+export default function App() {
+  const [loading, setLoading] = useState(true);
+  const [species, setSpecies] = useState([]);
+  const [completions, setCompletions] = useState({});
+  const [specimens, setSpecimens] = useState([]);
+  const { path, navigate } = useHashRoute();
+
+  useEffect(() => {
+    (async () => {
+      const loaded = await bootstrapData();
+      setSpecies(loaded.species);
+      setCompletions(loaded.completions);
+      setSpecimens(loaded.specimens);
+      setLoading(false);
+    })();
+  }, []);
+
+  const persistSpecies = async (next) => { setSpecies(next); await saveJSON(KEYS.species, next); };
+  const persistCompletions = async (next) => { setCompletions(next); await saveJSON(KEYS.completions, next); };
+  const persistSpecimens = async (next) => { setSpecimens(next); await saveJSON(KEYS.specimens, next); };
+
+  const year = new Date().getFullYear();
+  const toggleDone = (speciesId, taskId) => {
+    const key = `${speciesId}:${taskId}:${year}`;
+    const next = { ...completions, [key]: !completions[key] };
+    persistCompletions(next);
+  };
+
+  const removeSpecies = (id) => {
+    persistSpecies(species.filter((s) => s.id !== id));
+    // a species' trees go with it
+    if (specimens.some((x) => x.speciesId === id)) {
+      persistSpecimens(specimens.filter((x) => x.speciesId !== id));
+    }
+  };
+  const removeTask = (speciesId, taskId) => {
+    const next = species.map((s) => s.id === speciesId ? { ...s, tasks: s.tasks.filter((t) => t.id !== taskId) } : s);
+    persistSpecies(next);
+  };
+  const addTask = (speciesId, task) => {
+    const next = species.map((s) => s.id === speciesId ? { ...s, tasks: [...s.tasks, { ...normalizeTask(task), id: `t${Date.now()}` }] } : s);
+    persistSpecies(next);
+  };
+  const updateTask = (speciesId, taskId, fields) => {
+    // completions key on the task id, so edits must never regenerate it
+    const next = species.map((s) => s.id === speciesId
+      ? { ...s, tasks: s.tasks.map((t) => t.id === taskId ? normalizeTask({ ...t, ...fields }) : t) }
+      : s);
+    persistSpecies(next);
+  };
+  const updateSpecies = (id, fields) => {
+    persistSpecies(species.map((s) => s.id === id ? { ...s, ...fields } : s));
+  };
+  const addSpeciesBatch = (list) => {
+    let firstId = null;
+    const additions = list.map((sp, si) => {
+      const id = `${(sp.name || "species").toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}-${si}`;
+      if (!firstId) firstId = id;
+      const tasks = (sp.tasks || []).map((t, ti) => {
+        const nt = normalizeTask(t);
+        return {
+          id: `t${Date.now()}${si}${ti}`,
+          title: nt.title,
+          startMonth: nt.startMonth, startDay: nt.startDay,
+          endMonth: nt.endMonth, endDay: nt.endDay,
+          category: CATS[nt.category] ? nt.category : "other",
+          description: nt.description || "",
+        };
+      });
+      return { id, name: sp.name || "Untitled", botanicalName: sp.botanicalName || "", tasks };
+    });
+    persistSpecies([...species, ...additions]);
+    return firstId;
+  };
+  const addSpecimen = (speciesId, fields) => {
+    persistSpecimens([...specimens, { id: `tree${Date.now()}`, speciesId, ...fields }]);
+  };
+  const updateSpecimen = (id, fields) => {
+    persistSpecimens(specimens.map((x) => x.id === id ? { ...x, ...fields } : x));
+  };
+  const removeSpecimen = (id) => {
+    persistSpecimens(specimens.filter((x) => x.id !== id));
+  };
+
+  if (loading) {
+    return (
+      <div style={{ background: "#1F2A1C" }} className="min-h-screen flex items-center justify-center">
+        <Loader2 className="animate-spin" color="#A9B29C" size={28} />
+      </div>
+    );
+  }
+
+  const activeTab = TABS.find((t) => t.path === path) || TABS[0];
+  const Tool = activeTab.component;
+  const data = { species, completions, specimens, year };
+  const actions = {
+    toggleDone, removeSpecies, removeTask, addTask, updateTask, updateSpecies,
+    addSpeciesBatch, addSpecimen, updateSpecimen, removeSpecimen, navigate,
+  };
+
+  return (
+    <div style={{ background: "#1F2A1C", fontFamily: "IBM Plex Sans, sans-serif", color: "#EDE6D6", minHeight: "100vh" }} className="pb-24">
+      {/* header */}
+      <div className="px-5 pt-7 pb-5" style={{ borderBottom: "1px solid rgba(237,230,214,0.1)" }}>
+        <h1 className="font-display text-[26px] leading-tight" style={{ color: "#EDE6D6" }}>Bench Almanac</h1>
+        <p className="text-[13px] mt-1" style={{ color: "#A9B29C" }}>Care windows for your bonsai, tuned to Norway's seasons.</p>
+      </div>
+
+      <Tool data={data} actions={actions} />
+
+      {/* tool switcher */}
+      <nav aria-label="Tools" className="fixed bottom-0 left-0 right-0 z-40"
+        style={{ background: "#26331F", borderTop: "1px solid #3A4830", paddingBottom: "env(safe-area-inset-bottom)" }}>
+        <div className="flex">
+          {TABS.map(({ path: p, label, icon: Icon }) => {
+            const active = p === activeTab.path;
+            return (
+              <button key={p} onClick={() => navigate(p)} aria-current={active ? "page" : undefined}
+                className="flex-1 flex flex-col items-center gap-0.5 pt-2.5 pb-2 transition"
+                style={{ color: active ? "#D9A441" : "#A9B29C" }}>
+                <Icon size={18} aria-hidden="true" />
+                <span className="text-[10px]" style={{ fontFamily: "IBM Plex Mono, monospace" }}>{label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
+  );
+}

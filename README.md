@@ -1,11 +1,22 @@
 # Bench Almanac
 
-Care windows for your bonsai, tuned to Norway's seasons. A season-ring calendar,
-an "on the bench" list of upcoming jobs, and per-species task tracking with
-completion check-offs — all stored locally in your browser, no account needed.
+Care windows for your bonsai, tuned to Norway's seasons — all stored locally in
+your browser, no account needed. The app is split into three tools, switched
+via the bottom tab bar (each has its own address, so it can be bookmarked or
+pinned as a PWA shortcut):
 
-Ships with a European Beech (*Fagus sylvatica*) schedule as seed data; add your
-own species and tasks from there.
+- **Almanac** (`#/almanac`, the start screen) — the "on the bench" list of
+  upcoming jobs across your whole collection, plus each species' full care
+  plan with per-year completion check-offs.
+- **Wheel** (`#/wheel`) — the season-ring calendar. Select one species to see
+  its year at a glance, or several to find the stretches where their care
+  windows overlap.
+- **Collection** (`#/collection`) — where the data lives: add species (form or
+  JSON import), edit species and tasks, export/share, and track **your actual
+  trees** (nickname, acquired date, notes) under the species they belong to.
+
+Ships with a handful of species schedules as seed data; add your own species
+and tasks from there.
 
 **Live app:** https://dotknewt.github.io/bonsai/
 
@@ -36,10 +47,12 @@ codebase can be wrapped with [Capacitor](https://capacitorjs.com/) unchanged.
 
 ## Data & import format
 
-Everything lives in `localStorage` (`bonsai-species`, `bonsai-completions`).
-Species can be shared: **Export** produces JSON that anyone can paste into
-**Add species → Paste to import**. The in-app **Format guide** (inside the
-Add species dialog) documents this too.
+Everything lives in `localStorage` (`bonsai-species`, `bonsai-completions`,
+`bonsai-specimens` for your own trees). Species can be shared: **Export** (in
+the Collection tool) produces JSON that anyone can paste into **Add species →
+Paste to import**. The in-app **Format guide** (inside the Add species dialog)
+documents this too. Your own trees are personal to the device and are not part
+of a species export.
 
 ### Species object
 
