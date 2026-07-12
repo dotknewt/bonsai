@@ -1,0 +1,117 @@
+/* ---------- seed data (Norwegian-shifted timing) ---------- */
+export const SEED_SPECIES = [{
+  id: "juniper-juniperus-procumbens",
+  name: "Japanese Garden Juniper",
+  botanicalName: "Juniperus procumbens",
+  // Care windows adapted from the Bonsai4me Juniperus species guide, shifted ~3-4 weeks for Norway.
+  tasks: [
+    { id: "j1", title: "Spring health check", month: 4, day: 20, category: "other", description: "Junipers wake late, and a dead one can hold normal foliage colour for weeks after the roots have died. Confirm new growth is actually extending before doing any real work. Full sun all day suits procumbens' needle foliage." },
+    { id: "j2", title: "Start high-nitrogen feeding", month: 5, day: 10, category: "feed", description: "Feed fortnightly with a high-nitrogen fertiliser from the start of growth until midsummer. An occasional acidic feed helps, especially in hard-water areas." },
+    { id: "j3", title: "Pinch & scissor-prune new shoots", month: 6, day: 1, category: "prune", description: "Through the growing season, pinch only soft new tips; scissor-cut anything that has hardened — pinching hardened growth tears the bark away. Never remove more than about 25% of the foliage at once." },
+    { id: "j4", title: "Wiring — growth is supple", month: 6, day: 15, category: "wire", description: "Juniper wood is extremely flexible and can be wired year-round, but wire takes 3 months to a year to set, so check often for biting as branches thicken." },
+    { id: "j5", title: "Pest watch", month: 7, day: 10, category: "pest", description: "Dense pads shelter spider mites and scale. Part the foliage and check the interior — mite damage shows as dull, grey-green needles." },
+    { id: "j6", title: "Switch to balanced feed", month: 7, day: 15, category: "feed", description: "From midsummer, swap the high-nitrogen fertiliser for a balanced feed, still fortnightly, and continue until winter." },
+    { id: "j7", title: "Thin the foliage pads", month: 8, day: 1, category: "prune", description: "Repeated pruning makes pads dense enough to block light and air from interior and lower branches, weakening them until they die back. Thin now so inner shoots stay strong." },
+    { id: "j8", title: "Repot (every 3–5 years)", month: 8, day: 20, category: "repot", description: "Junipers repot best in late summer/early autumn, not spring. An inorganic clay-based soil is essential. Never bare-root — replace no more than a third of the soil in any one repotting." },
+    { id: "j9", title: "Autumn watering check", month: 9, day: 15, category: "other", description: "Junipers in old, compacted organic soil rot easily if overwatered. As growth slows and autumn rain sets in, make sure the pot drains freely and ease off the can." },
+    { id: "j10", title: "Structural wiring window", month: 10, day: 1, category: "wire", description: "The whole tree will need 100% wiring at least once in its life, and autumn is a calm window for it. No heavy bends in trunks or branches once temperatures reach 0°C or below." },
+    { id: "j11", title: "Winter protection below −10°C", month: 11, day: 1, category: "other", description: "Fully hardy outdoors, but shelter it (cold frame or unheated shed) when frosts drop below −10°C. Never overwinter indoors — low light, dry air and lost dormancy will kill it." },
+  ],
+}, {
+  id: "mugo-pinus-mugo",
+  name: "Mugo Pine",
+  botanicalName: "Pinus mugo",
+  // Care windows adapted from the Bonsai4me "Pinus mugo Indepth" article and Pinus species guide, shifted ~3-4 weeks for Norway.
+  tasks: [
+    { id: "m1", title: "Full-sun position for the season", month: 4, day: 20, category: "other", description: "Give maximum light from snowmelt onwards — insufficient sunlight means extended needles and dieback of shaded branches. Plenty of water too, but the soil must drain fast; roots should never sit in water." },
+    { id: "m2", title: "Start strong slow-release feeding", month: 5, day: 10, category: "feed", description: "Feed strongly with a slow-release fertiliser from spring through to late summer — mugos take heavy feeding and repay it with vigour." },
+    { id: "m3", title: "Pinch the strongest candles", month: 5, day: 25, category: "prune", description: "When candles reach 2.5–4 cm, gently break away the top of any that are noticeably more vigorous than the rest to balance energy across the tree." },
+    { id: "m4", title: "Bud selection — reduce to pairs", month: 6, day: 5, category: "prune", description: "Wherever buds cluster, reduce to 2 so each branch forks into two sub-branches. Remove excess buds as and when they appear through spring and summer." },
+    { id: "m5", title: "Pest & needle-cast check", month: 6, day: 20, category: "pest", description: "Watch for aphids and pine sawfly larvae on new growth. Needle discolouration in spring or summer can mean fungal needle cast — autumn yellowing of the oldest needles is just natural shedding." },
+    { id: "m6", title: "Cut back the first flush", month: 7, day: 1, category: "prune", description: "Cut the first flush back to 1–4 sets of new needles (by branch strength) to force a compact second flush this season. Never remove more than 50% of top growth in one year, and keep old needles wherever you want backbuds — mugos backbud where needles remain, not where they've been removed." },
+    { id: "m7", title: "Repot window — summer, not spring", month: 7, day: 20, category: "repot", description: "Mugos react far better to summer repotting than the spring timing used for other pines: do it after the first flush is cut back. Pick old, poor-draining soil out by hand (never wash the roots); on weaker trees remove only half the compacted soil. In heat above ~27°C, shade for two weeks and mist the foliage twice daily." },
+    { id: "m8", title: "Final feed of the season", month: 8, day: 25, category: "feed", description: "Feeding runs to late summer, then stops so the second flush can harden off before the Norwegian winter." },
+    { id: "m9", title: "Styling & wiring window", month: 9, day: 1, category: "wire", description: "Late summer/early autumn is the main window to style and wire mugo pines. One insult per year: after repotting, styling or drastic pruning, wait 12 months before the next major work — a tree styled now can't be repotted next summer." },
+    { id: "m10", title: "Heavy pruning / trunk chops", month: 10, day: 1, category: "prune", description: "Autumn is the time for trunk chops and heavy branch removal on pines. Leave a short stump and seal the wound. This counts as the year's one insult." },
+    { id: "m11", title: "Winter — hardiness check", month: 10, day: 20, category: "other", description: "A mountain native, mugo shrugs off severe cold, but shield it from freezing winds while the rootball is frozen. Yellowing oldest needles now is natural shedding, not trouble." },
+  ],
+}, {
+  id: "acer-acer-palmatum",
+  name: "Japanese Maple",
+  botanicalName: "Acer palmatum",
+  // Care windows adapted from the Bonsai4me Acer palmatum species guide, shifted ~3-4 weeks for Norway.
+  tasks: [
+    { id: "a1", title: "Shelter from sun & wind", startMonth: 4, startDay: 15, endMonth: 9, endDay: 30, category: "other", description: "Keep out of direct midday sun and strong wind all season — the thin leaves scorch easily. Good morning light still supports vigour and autumn colour. Green-leaved varieties are tougher than red." },
+    { id: "a2", title: "Repot as buds extend (every 2–5 yrs)", startMonth: 4, startDay: 20, endMonth: 5, endDay: 10, category: "repot", description: "Repot just as buds start to move in spring, then stop once shoots extend. Early-leafing varieties like Kiyohime can go a little later. Free-draining soil." },
+    { id: "a3", title: "Weekly high-nitrogen feed", startMonth: 5, startDay: 10, endMonth: 6, endDay: 15, category: "feed", description: "Feed weekly with high-nitrogen fertiliser as soon as leafbuds open to build strong leaves. On refined trees, holding the early feed back keeps internodes short." },
+    { id: "a4", title: "Pinch new shoots to shape", startMonth: 5, startDay: 20, endMonth: 7, endDay: 15, category: "prune", description: "Pinch or cut new growth back to one or two pairs of leaves, leaving two opposing leaves, to build fine twiggy ramification. Never do structural pruning now." },
+    { id: "a5", title: "Switch to balanced feed", startMonth: 6, startDay: 15, endMonth: 8, endDay: 25, category: "feed", description: "Once spring growth hardens off, feed fortnightly with a balanced fertiliser through the rest of the season." },
+    { id: "a6", title: "Pest & disease watch", startMonth: 5, startDay: 15, endMonth: 9, endDay: 15, category: "pest", description: "Watch for aphids, scale insects and caterpillars, plus fungal problems like verticillium wilt. Keep airflow good to limit mildew on shaded inner growth." },
+    { id: "a7", title: "Mid-summer leaf-cut & hard pruning", startMonth: 7, startDay: 1, endMonth: 7, endDay: 25, category: "prune", description: "The semi-dormant midsummer window is safe for hard/structural pruning and, on healthy trees only, partial leaf-cutting — never in a repotting year or two years running. Seal larger wounds." },
+    { id: "a8", title: "Wiring window", startMonth: 5, startDay: 1, endMonth: 10, endDay: 20, category: "wire", description: "Wire any time from spring to late autumn. Bare branches in spring, after defoliation in midsummer, or after leaf-fall are easiest. Bark marks readily, so check often." },
+    { id: "a9", title: "Autumn hard-pruning window", startMonth: 10, startDay: 15, endMonth: 11, endDay: 10, category: "prune", description: "The other safe time for hard and formative pruning is within about a week of leaf-fall. Crucially, never prune in spring — all acers bleed profusely then and can lose branches or be badly weakened." },
+    { id: "a10", title: "Winter dormancy & frost protection", startMonth: 11, startDay: 15, endMonth: 3, endDay: 1, category: "other", description: "Acers need a real dormancy (below ~10°C for at least 44 days) but the fine roots are frost-tender in a pot — shelter below −10°C. Norwegian winters cover the cold requirement easily." },
+  ],
+}, {
+  id: "ilex-ilex-verticillata",
+  name: "Winterberry",
+  botanicalName: "Ilex verticillata",
+  // No dedicated Ilex verticillata guide on Bonsai4me; care adapted from its Ilex (holly) guide — closest match is the deciduous Ilex serrata — shifted ~3-4 weeks for Norway.
+  tasks: [
+    { id: "il1", title: "Repot annually as buds extend", startMonth: 4, startDay: 20, endMonth: 5, endDay: 15, category: "repot", description: "Deciduous hollies repot annually in spring as new buds extend, in a basic free-draining soil mix." },
+    { id: "il2", title: "Fortnightly feeding", startMonth: 5, startDay: 10, endMonth: 9, endDay: 1, category: "feed", description: "Feed every two weeks right through the growing season." },
+    { id: "il3", title: "Flowering — keep a pollinator nearby", startMonth: 6, startDay: 1, endMonth: 6, endDay: 30, category: "other", description: "Winterberry is dioecious: a male plant must be near a female for berries to set. The small flowers open in early summer, so keep both sexes together while pollinators are active." },
+    { id: "il4", title: "Trim to shape", startMonth: 6, startDay: 1, endMonth: 8, endDay: 15, category: "prune", description: "Trim new growth to shape through the growing season. To keep the autumn berry display, avoid removing this year's fruiting wood." },
+    { id: "il5", title: "Pest watch", startMonth: 5, startDay: 15, endMonth: 9, endDay: 1, category: "pest", description: "Young shoots can be hit by aphids, and scale insects turn up on hollies too — check shoot tips and leaf undersides." },
+    { id: "il6", title: "Wiring — brittle branches", startMonth: 6, startDay: 15, endMonth: 8, endDay: 15, category: "wire", description: "Holly branches are brittle and snap easily, so wire gently and support sharp bends. Summer, with the wood pliable, is the easiest window." },
+    { id: "il7", title: "Semi-ripe cuttings", startMonth: 8, startDay: 15, endMonth: 9, endDay: 30, category: "propagate", description: "Take semi-ripe cuttings in late summer or early autumn. Seed is possible too but sown outdoors in autumn it can take 2–3 years to germinate." },
+    { id: "il8", title: "Berry display & winter protection", startMonth: 10, startDay: 15, endMonth: 12, endDay: 20, category: "other", description: "Bright red berries hold on the bare twigs into winter — the whole point of the species. Fully deciduous and fairly hardy, but give some shelter once frosts drop below −5°C." },
+  ],
+}, {
+  id: "metasequoia-glyptostroboides",
+  name: "Dawn Redwood",
+  botanicalName: "Metasequoia glyptostroboides",
+  // No dedicated Bonsai4me species guide; care adapted from Bonsai4me's deciduous repotting/watering articles plus established dawn-redwood practice, shifted ~3-4 weeks for Norway.
+  tasks: [
+    { id: "d1", title: "Full sun, never let it dry", startMonth: 4, startDay: 20, endMonth: 9, endDay: 30, category: "other", description: "Stand in full sun outdoors year-round. A fast-growing swamp tree, it is one of the few bonsai that tolerates constant wet — never let the pot dry out, and stand it in a water tray through hot spells." },
+    { id: "d2", title: "Repot as buds move (remove ~1/3 roots)", startMonth: 4, startDay: 15, endMonth: 5, endDay: 10, category: "repot", description: "Being deciduous, it repots in spring as buds move; it is safe to remove about a third of the rootmass. Grows roots fast, so young trees may need it yearly. Free-draining soil that still holds moisture." },
+    { id: "d3", title: "Feed hard — it grows fast", startMonth: 5, startDay: 10, endMonth: 8, endDay: 25, category: "feed", description: "A vigorous grower and heavy feeder: feed regularly right through the growing season to fuel ramification." },
+    { id: "d4", title: "Clip-and-grow through the season", startMonth: 5, startDay: 20, endMonth: 8, endDay: 31, category: "prune", description: "Build the tree by clip-and-grow: let shoots extend, then cut back to a couple of leaf pairs. Because buds are opposite, remove one of each pair at forks to avoid swollen bar branches." },
+    { id: "d5", title: "Wire young shoots early", startMonth: 5, startDay: 20, endMonth: 7, endDay: 15, category: "wire", description: "Mostly a formal-upright, clip-and-grow species, but new shoots can be wired while still soft — they lignify and thicken fast, so watch closely for the wire biting in." },
+    { id: "d6", title: "Pest watch — aphids", startMonth: 5, startDay: 15, endMonth: 8, endDay: 31, category: "pest", description: "Generally trouble-free; aphids on the soft new growth are the main thing to watch for." },
+    { id: "d7", title: "Autumn colour", startMonth: 10, startDay: 1, endMonth: 10, endDay: 31, category: "other", description: "The soft foliage turns orange-brown to red-brown before dropping — a deciduous conifer, so expect it to go bare for winter." },
+    { id: "d8", title: "Protect roots from hard freeze", startMonth: 11, startDay: 15, endMonth: 3, endDay: 1, category: "other", description: "Hardy and needs its winter dormancy, but the shallow, moisture-loving roots can be damaged by a hard freeze in a bonsai pot — shelter the pot in a cold frame or heel it into the ground during deep Norwegian cold." },
+  ],
+}, {
+  id: "carob-ceratonia-siliqua",
+  name: "Carob",
+  botanicalName: "Ceratonia siliqua",
+  // No Bonsai4me species guide; care based on established Ceratonia siliqua practice. A tender Mediterranean species — must be overwintered frost-free in Norway.
+  tasks: [
+    { id: "c1", title: "Out to full sun & heat", startMonth: 5, startDay: 15, endMonth: 9, endDay: 15, category: "other", description: "A Mediterranean evergreen that loves heat and full sun. Once nights are reliably frost-free, give it the sunniest, warmest spot you have outdoors for the summer." },
+    { id: "c2", title: "Repot & root-prune in warm spring", startMonth: 5, startDay: 20, endMonth: 6, endDay: 10, category: "repot", description: "Repot and root-prune together once the days are genuinely warm — carob resents cold, wet roots. Use a gritty, sharply draining mix; it is drought-adapted and rots in soggy soil." },
+    { id: "c3", title: "Water sparingly, let it dry", startMonth: 5, startDay: 15, endMonth: 9, endDay: 15, category: "other", description: "Xerophytic and drought-tolerant: let the soil approach dryness between waterings rather than keeping it constantly moist." },
+    { id: "c4", title: "Feed through the growing season", startMonth: 5, startDay: 20, endMonth: 8, endDay: 31, category: "feed", description: "Feed during active growth. Carob is slow in both trunk and branch, so steady feeding through the warm months helps it build." },
+    { id: "c5", title: "Prune with the repot", startMonth: 5, startDay: 20, endMonth: 6, endDay: 30, category: "prune", description: "Branch pruning is best done alongside repotting in early summer. Growth is slow, so prune conservatively and let shoots extend before cutting back." },
+    { id: "c6", title: "Pest watch", startMonth: 6, startDay: 1, endMonth: 9, endDay: 1, category: "pest", description: "Under glass and in still summer air, watch for scale insects and mealybug on stems and leaf axils." },
+    { id: "c7", title: "Bring in before frost", startMonth: 9, startDay: 20, endMonth: 10, endDay: 20, category: "other", description: "Carob is very frost-sensitive. In Norway it cannot overwinter outdoors — move it into a frost-free greenhouse or bright cool room before the first frosts and keep it just ticking over until spring." },
+  ],
+}, {
+  id: "beech-fagus-sylvatica",
+  name: "European Beech",
+  botanicalName: "Fagus sylvatica",
+  tasks: [
+    { id: "t1", title: "Repot (every 2 years)", startMonth: 5, startDay: 1, endMonth: 5, endDay: 21, category: "repot", description: "Repot in a basic soil mix as buds swell. Norwegian springs run 3–4 weeks behind the UK, so go by bud movement, not the date." },
+    { id: "t2", title: "Feed — trees still developing", startMonth: 5, startDay: 10, endMonth: 8, endDay: 20, category: "feed", description: "If trunk or branch structure is still being built, feed from the moment leaves unfurl right through the growing season." },
+    { id: "t3", title: "Fortnightly feeding — refined trees", startMonth: 6, startDay: 5, endMonth: 8, endDay: 20, category: "feed", description: "Refined trees get a 3–4 week feeding hold after leaf-out to keep spring growth fine, then feed fortnightly until late summer." },
+    { id: "t4", title: "Prune to bud", startMonth: 6, startDay: 15, endMonth: 7, endDay: 15, category: "prune", description: "Once spring growth has fully extended, cut back to a bud facing the direction you want new growth to take." },
+    { id: "t5", title: "Wiring — check often", startMonth: 6, startDay: 16, endMonth: 9, endDay: 15, category: "wire", description: "Branches thicken fast now. Beech bark is smooth and scars easily, so inspect wire every few days while it's on." },
+    { id: "t6", title: "Air-layering window", startMonth: 7, startDay: 5, endMonth: 8, endDay: 5, category: "propagate", description: "Take air-layers once this year's spring growth has hardened off." },
+    { id: "t7", title: "Optional hard pruning", startMonth: 7, startDay: 6, endMonth: 8, endDay: 1, category: "prune", description: "Midsummer is an alternative to late-winter hard pruning — wounds heal fastest now, so it's also the best time to remove large branches." },
+    { id: "t8", title: "Pest & disease watch", startMonth: 6, startDay: 1, endMonth: 9, endDay: 15, category: "pest", description: "Watch for aphids, whitefly, bark scale and powdery mildew through the growing season." },
+    { id: "t9", title: "Final feeds of the season", startMonth: 8, startDay: 20, endMonth: 9, endDay: 10, category: "feed", description: "Taper feeding off through this window so growth can harden before autumn." },
+    { id: "t10", title: "Autumn colour & seed sowing", startMonth: 9, startDay: 25, endMonth: 10, endDay: 31, category: "seed", description: "Foliage turns yellow to orange-brown and often stays on through winter. Sow fresh beechmast outdoors now for natural stratification." },
+    { id: "t11", title: "Start winter seed stratification", startMonth: 11, startDay: 15, endMonth: 12, endDay: 31, category: "seed", description: "If seed wasn't sown outdoors in autumn, begin cold-stratifying it indoors for a spring sowing." },
+    { id: "t12", title: "Late-winter hard pruning window", startMonth: 2, startDay: 15, endMonth: 3, endDay: 20, category: "prune", description: "The alternative to midsummer hard pruning — do this before spring growth resumes." },
+  ],
+}];

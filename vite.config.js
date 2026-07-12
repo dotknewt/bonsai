@@ -24,6 +24,11 @@ export default defineConfig({
           { src: "icon-192.png", sizes: "192x192", type: "image/png" },
           { src: "icon-512.png", sizes: "512x512", type: "image/png" },
           { src: "icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }
+        ],
+        shortcuts: [
+          { name: "Almanac", short_name: "Almanac", url: "./#/almanac", icons: [{ src: "icon-192.png", sizes: "192x192" }] },
+          { name: "Season wheel", short_name: "Wheel", url: "./#/wheel", icons: [{ src: "icon-192.png", sizes: "192x192" }] },
+          { name: "Collection", short_name: "Collection", url: "./#/collection", icons: [{ src: "icon-192.png", sizes: "192x192" }] }
         ]
       },
       workbox: {
