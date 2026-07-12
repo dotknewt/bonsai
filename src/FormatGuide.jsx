@@ -93,7 +93,7 @@ export default function FormatGuide({ onClose }) {
           The import box accepts JSON in three shapes: a bare task list (uses the name you typed above),
           a single species object, or a whole collection — the same formats "Export" produces.
           Whole collections are best brought in through Collection → "Import", which previews the
-          file and can skip duplicates. Each task is a care <em>window</em> spanning weeks to months,
+          file and can merge or skip duplicates. Each task is a care <em>window</em> spanning weeks to months,
           not a single day.
         </p>
 
@@ -102,7 +102,7 @@ export default function FormatGuide({ onClose }) {
 
         <Example title="Bare task list" note="Type a common name first, then paste just the tasks." code={EXAMPLE_TASKS} />
         <Example title="Single species" note="A complete species — name comes from the JSON." code={EXAMPLE_SPECIES} />
-        <Example title="Whole collection" note={'Several species at once — use Collection → "Import" to preview and skip duplicates.'} code={EXAMPLE_COLLECTION} />
+        <Example title="Whole collection" note={'Several species at once — use Collection → "Import" to preview and merge or skip duplicates.'} code={EXAMPLE_COLLECTION} />
       </div>
     </div>
   );

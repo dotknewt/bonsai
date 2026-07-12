@@ -43,6 +43,34 @@ export function partitionDuplicateSpecies(list, existingNames) {
   return { fresh, duplicates };
 }
 
+export const taskTitleKey = (t) => (t.title || "").trim().toLowerCase();
+
+/* Fill what `existing` is missing from `imported` without touching anything
+   it already has: an empty botanical name, descriptions on title-matched
+   tasks, and whole tasks whose title isn't there yet. Existing task ids are
+   never regenerated — completions key on them. `makeTask` turns a raw
+   imported task into a normalized, id-stamped store task. */
+export function mergeSpeciesData(existing, imported, makeTask) {
+  const titles = new Set(existing.tasks.map(taskTitleKey));
+  let filled = 0;
+  const tasks = existing.tasks.map((t) => {
+    if (t.description) return t;
+    const src = imported.tasks.find((i) => taskTitleKey(i) === taskTitleKey(t));
+    if (src?.description) { filled++; return { ...t, description: src.description }; }
+    return t;
+  });
+  const newTasks = [];
+  for (const t of imported.tasks) {
+    const key = taskTitleKey(t);
+    if (!key || titles.has(key)) continue;
+    titles.add(key);
+    newTasks.push(makeTask(t));
+  }
+  const botanicalName = existing.botanicalName || imported.botanicalName || "";
+  const changed = newTasks.length > 0 || filled > 0 || botanicalName !== (existing.botanicalName || "");
+  return { merged: { ...existing, botanicalName, tasks: [...tasks, ...newTasks] }, tasksAdded: newTasks.length, changed };
+}
+
 /* First-load bootstrap shared by every tool: seed defaults, merge newly
    shipped defaults into existing almanacs, migrate legacy task shapes. */
 export async function bootstrapData() {
