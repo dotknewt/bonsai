@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Loader2, ListChecks, Orbit, Sprout } from "lucide-react";
 import { useHashRoute } from "./hooks/useHashRoute.js";
-import { KEYS, saveJSON, bootstrapData } from "./lib/storage.js";
+import { KEYS, saveJSON, bootstrapData, partitionDuplicateSpecies } from "./lib/storage.js";
 import { normalizeTask } from "./lib/dates.js";
 import { CATS } from "./lib/categories.js";
 import Almanac from "./tools/Almanac.jsx";
@@ -106,6 +106,13 @@ export default function App() {
     persistSpecies([...species, ...additions]);
     return firstId;
   };
+  const importSpecies = (list, { skipDuplicates = false } = {}) => {
+    const kept = skipDuplicates
+      ? partitionDuplicateSpecies(list, species.map((s) => s.name)).fresh
+      : list;
+    const firstId = kept.length ? addSpeciesBatch(kept) : null;
+    return { added: kept.length, skipped: list.length - kept.length, firstId };
+  };
   const addSpecimen = (speciesId, fields) => {
     persistSpecimens([...specimens, { id: `tree${Date.now()}`, speciesId, ...fields }]);
   };
@@ -134,7 +141,7 @@ export default function App() {
   const data = { species, completions, specimens, specimensBySpecies, year };
   const actions = {
     toggleDone, removeSpecies, removeTask, addTask, updateTask, updateSpecies,
-    addSpeciesBatch, addSpecimen, updateSpecimen, removeSpecimen, navigate,
+    addSpeciesBatch, importSpecies, addSpecimen, updateSpecimen, removeSpecimen, navigate,
   };
 
   return (

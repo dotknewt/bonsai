@@ -26,6 +26,23 @@ export function toExportObject(s) {
   return { name: s.name, botanicalName: s.botanicalName, tasks: s.tasks.map(({ id, ...rest }) => rest) };
 }
 
+/* ---------- import helpers ---------- */
+// duplicates are matched on the common name only, ignoring case and whitespace
+export const speciesNameKey = (name) => (name || "Untitled").trim().toLowerCase();
+
+/* Split an import list into species that are new vs. ones whose name already
+   exists — either in the collection or earlier in the same list. */
+export function partitionDuplicateSpecies(list, existingNames) {
+  const seen = new Set(existingNames.map(speciesNameKey));
+  const fresh = [], duplicates = [];
+  for (const sp of list) {
+    const key = speciesNameKey(sp.name);
+    if (seen.has(key)) duplicates.push(sp);
+    else { seen.add(key); fresh.push(sp); }
+  }
+  return { fresh, duplicates };
+}
+
 /* First-load bootstrap shared by every tool: seed defaults, merge newly
    shipped defaults into existing almanacs, migrate legacy task shapes. */
 export async function bootstrapData() {
