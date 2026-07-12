@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Loader2, ListChecks, Orbit, Sprout } from "lucide-react";
 import { useHashRoute } from "./hooks/useHashRoute.js";
-import { KEYS, saveJSON, bootstrapData, partitionDuplicateSpecies } from "./lib/storage.js";
+import { KEYS, saveJSON, bootstrapData, partitionDuplicateSpecies, speciesNameKey, mergeSpeciesData } from "./lib/storage.js";
 import { normalizeTask } from "./lib/dates.js";
 import { CATS } from "./lib/categories.js";
 import Almanac from "./tools/Almanac.jsx";
@@ -85,33 +85,61 @@ export default function App() {
   const updateSpecies = (id, fields) => {
     persistSpecies(species.map((s) => s.id === id ? { ...s, ...fields } : s));
   };
-  const addSpeciesBatch = (list) => {
+  const makeStoreTask = (t, si, ti) => {
+    const nt = normalizeTask(t);
+    return {
+      id: `t${Date.now()}${si}${ti}`,
+      title: nt.title,
+      startMonth: nt.startMonth, startDay: nt.startDay,
+      endMonth: nt.endMonth, endDay: nt.endDay,
+      category: CATS[nt.category] ? nt.category : "other",
+      description: nt.description || "",
+    };
+  };
+  const buildSpeciesAdditions = (list) => {
     let firstId = null;
     const additions = list.map((sp, si) => {
       const id = `${(sp.name || "species").toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}-${si}`;
       if (!firstId) firstId = id;
-      const tasks = (sp.tasks || []).map((t, ti) => {
-        const nt = normalizeTask(t);
-        return {
-          id: `t${Date.now()}${si}${ti}`,
-          title: nt.title,
-          startMonth: nt.startMonth, startDay: nt.startDay,
-          endMonth: nt.endMonth, endDay: nt.endDay,
-          category: CATS[nt.category] ? nt.category : "other",
-          description: nt.description || "",
-        };
-      });
-      return { id, name: sp.name || "Untitled", botanicalName: sp.botanicalName || "", tasks };
+      return {
+        id, name: sp.name || "Untitled", botanicalName: sp.botanicalName || "",
+        tasks: (sp.tasks || []).map((t, ti) => makeStoreTask(t, si, ti)),
+      };
     });
+    return { additions, firstId };
+  };
+  const addSpeciesBatch = (list) => {
+    const { additions, firstId } = buildSpeciesAdditions(list);
     persistSpecies([...species, ...additions]);
     return firstId;
   };
-  const importSpecies = (list, { skipDuplicates = false } = {}) => {
-    const kept = skipDuplicates
-      ? partitionDuplicateSpecies(list, species.map((s) => s.name)).fresh
-      : list;
-    const firstId = kept.length ? addSpeciesBatch(kept) : null;
-    return { added: kept.length, skipped: list.length - kept.length, firstId };
+  const importSpecies = (list, { duplicates = "merge" } = {}) => {
+    const { fresh, duplicates: dups } = duplicates === "add"
+      ? { fresh: list, duplicates: [] }
+      : partitionDuplicateSpecies(list, species.map((s) => s.name));
+    let current = species;
+    let updated = 0, tasksAdded = 0, firstMergedId = null;
+    if (duplicates === "merge") {
+      dups.forEach((imp, di) => {
+        // fill the first name match only — copies from "Add anyway" stay untouched
+        const idx = current.findIndex((s) => speciesNameKey(s.name) === speciesNameKey(imp.name));
+        if (idx === -1) return;
+        let ti = 0;
+        const { merged, tasksAdded: added, changed } =
+          mergeSpeciesData(current[idx], { ...imp, tasks: imp.tasks || [] }, (t) => makeStoreTask(t, `m${di}`, ti++));
+        if (!changed) return;
+        updated++; tasksAdded += added;
+        if (!firstMergedId) firstMergedId = merged.id;
+        current = current.map((s, i) => (i === idx ? merged : s));
+      });
+    }
+    const { additions, firstId } = buildSpeciesAdditions(fresh);
+    if (additions.length || updated) persistSpecies([...current, ...additions]);
+    return {
+      added: additions.length, updated, tasksAdded,
+      skipped: duplicates === "skip" ? dups.length : 0,
+      firstId: firstId || firstMergedId,
+    };
   };
   const addSpecimen = (speciesId, fields) => {
     persistSpecimens([...specimens, { id: `tree${Date.now()}`, speciesId, ...fields }]);

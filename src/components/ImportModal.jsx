@@ -56,9 +56,9 @@ function TogglePill({ active, onClick, children }) {
 
 export default function ImportModal({ existingNames, onClose, onImport }) {
   const [text, setText] = useState("");
-  const [skipDuplicates, setSkipDuplicates] = useState(true);
+  const [dupMode, setDupMode] = useState("merge"); // "merge" | "skip" | "add"
   const [fileError, setFileError] = useState("");
-  const [result, setResult] = useState(null); // { added, skipped } after importing
+  const [result, setResult] = useState(null); // { added, updated, tasksAdded, skipped } after importing
   const [showFormat, setShowFormat] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -68,8 +68,8 @@ export default function ImportModal({ existingNames, onClose, onImport }) {
     [parsed, existingNames]
   );
   const taskCount = parsed?.list ? parsed.list.reduce((n, s) => n + s.tasks.length, 0) : 0;
-  const willAdd = parsed?.list ? (skipDuplicates ? dup.fresh.length : parsed.list.length) : 0;
-  const allDuplicates = !!parsed?.list && skipDuplicates && willAdd === 0;
+  const willAdd = parsed?.list ? (dupMode === "skip" ? dup.fresh.length : parsed.list.length) : 0;
+  const allDuplicates = !!parsed?.list && dupMode === "skip" && willAdd === 0;
 
   const pickFile = async (e) => {
     const f = e.target.files?.[0];
@@ -82,18 +82,24 @@ export default function ImportModal({ existingNames, onClose, onImport }) {
 
   const submit = () => {
     if (!parsed?.list || willAdd === 0) return;
-    const res = onImport(parsed.list, { skipDuplicates });
+    const res = onImport(parsed.list, { duplicates: dupMode });
     setResult(res);
+  };
+
+  const resultText = () => {
+    const parts = [];
+    if (result.added > 0) parts.push(`Added ${result.added} species.`);
+    if (result.updated > 0)
+      parts.push(`Updated ${result.updated} existing species${result.tasksAdded > 0 ? ` with ${plural(result.tasksAdded, "new task")}` : ""}.`);
+    if (result.skipped > 0) parts.push(`Skipped ${plural(result.skipped, "duplicate")}.`);
+    return parts.length ? parts.join(" ") : "Nothing new to add — your collection already had all of it.";
   };
 
   return (
     <ModalShell title="Import a collection" onClose={onClose}>
       {result ? (
         <div className="space-y-3">
-          <p className="text-[13px]" style={{ color: "#EDE6D6" }}>
-            Added {result.added} species.
-            {result.skipped > 0 && ` Skipped ${plural(result.skipped, "duplicate")}.`}
-          </p>
+          <p className="text-[13px]" style={{ color: "#EDE6D6" }}>{resultText()}</p>
           <SubmitButton onClick={onClose}>Done</SubmitButton>
         </div>
       ) : (
@@ -118,13 +124,15 @@ export default function ImportModal({ existingNames, onClose, onImport }) {
           </div>
 
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[11px] uppercase tracking-wide" style={{ color: "#8A9483", fontFamily: "IBM Plex Mono, monospace" }}>Duplicates</span>
-              <TogglePill active={skipDuplicates} onClick={() => setSkipDuplicates(true)}>Skip</TogglePill>
-              <TogglePill active={!skipDuplicates} onClick={() => setSkipDuplicates(false)}>Add anyway</TogglePill>
+              <TogglePill active={dupMode === "merge"} onClick={() => setDupMode("merge")}>Merge</TogglePill>
+              <TogglePill active={dupMode === "skip"} onClick={() => setDupMode("skip")}>Skip</TogglePill>
+              <TogglePill active={dupMode === "add"} onClick={() => setDupMode("add")}>Add anyway</TogglePill>
             </div>
             <p className="text-[11px] mt-1" style={{ color: "#6E7A64" }}>
               A duplicate is a species whose name matches one already in your collection (ignoring case).
+              Merge adds what's missing — botanical name, new tasks — without changing anything already there.
             </p>
           </div>
 
