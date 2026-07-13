@@ -7,12 +7,15 @@ import SpeciesPicker from "../components/SpeciesPicker.jsx";
 
 /* The calendar wheel: one species' year at a glance, or several species
    compared to find the stretches where their care windows coincide.
+   An empty selection means every species, mirroring the category chips.
    Selection and category filter live in App so they survive tab switches. */
 export default function Wheel({ data, selectedIds, onToggleSpecies, onSelectAllSpecies, onClearSpecies, enabledCats, onToggleCat }) {
   const { species } = data;
 
   const selected = species.filter((s) => selectedIds.includes(s.id));
-  const active = selected.length === 1 ? selected[0] : null;
+  // no selection = every species, same semantics as the category chips
+  const effective = selected.length ? selected : species;
+  const active = effective.length === 1 ? effective[0] : null;
 
   // single-species view: chips filter the calendar; with nothing (relevant)
   // turned on, every task shows
@@ -32,7 +35,7 @@ export default function Wheel({ data, selectedIds, onToggleSpecies, onSelectAllS
             selectedIds={selectedIds}
             onToggle={onToggleSpecies}
             onSelectAll={onSelectAllSpecies} onClearAll={onClearSpecies}
-            hint="Select several species to see where their care windows overlap." />
+            hint="With none selected, every species shows. Select a few to see where their care windows overlap." />
         </div>
       )}
 
@@ -42,11 +45,7 @@ export default function Wheel({ data, selectedIds, onToggleSpecies, onSelectAllS
         </p>
       )}
 
-      {selected.length === 0 && species.length > 0 && (
-        <p className="px-5 pt-6 text-sm" style={{ color: "#A9B29C" }}>Select a species above to see its calendar.</p>
-      )}
-
-      {selected.length > 1 && <OverlapView speciesList={selected} enabledCats={enabledCats} onToggleCat={onToggleCat} />}
+      {effective.length > 1 && <OverlapView speciesList={effective} enabledCats={enabledCats} onToggleCat={onToggleCat} />}
 
       {/* single-species wheel */}
       {active && (

@@ -26,7 +26,8 @@ export default function SpeciesPicker({
   const label = selected.length === 1
     ? { text: bot(selected[0]), style: botanicalStyle }
     : selected.length === 0
-      ? { text: mode === "multi" ? "Select species…" : "Choose a species", style: { color: "#A9B29C" } }
+      // in multi mode an empty selection falls back to every species
+      ? { text: mode === "multi" ? `All species (${species.length})` : "Choose a species", style: { color: "#A9B29C" } }
       : allSelected
         ? { text: `All species (${species.length})`, style: {} }
         : { text: `${selected.length} species selected`, style: {} };
