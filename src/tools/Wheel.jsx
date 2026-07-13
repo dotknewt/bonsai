@@ -2,12 +2,13 @@ import React, { useMemo } from "react";
 import { CATS, catOf } from "../lib/categories.js";
 import { YEAR_DAYS, doyOf, angleForDoy, fmtDoy, doyInRange, overlapRanges } from "../lib/overlap.js";
 import SeasonRing from "../components/SeasonRing.jsx";
-import { Badge, CategoryChips, SpeciesChips } from "../components/ui.jsx";
+import { Badge, CategoryChips } from "../components/ui.jsx";
+import SpeciesPicker from "../components/SpeciesPicker.jsx";
 
 /* The calendar wheel: one species' year at a glance, or several species
    compared to find the stretches where their care windows coincide.
    Selection and category filter live in App so they survive tab switches. */
-export default function Wheel({ data, selectedIds, onToggleSpecies, enabledCats, onToggleCat }) {
+export default function Wheel({ data, selectedIds, onToggleSpecies, onSelectAllSpecies, onClearSpecies, enabledCats, onToggleCat }) {
   const { species } = data;
 
   const selected = species.filter((s) => selectedIds.includes(s.id));
@@ -23,14 +24,17 @@ export default function Wheel({ data, selectedIds, onToggleSpecies, enabledCats,
 
   return (
     <>
-      {/* species tabs (multi-select) */}
-      <div className="px-5 pt-5">
-        <h2 className="text-[12px] tracking-wide uppercase mb-2" style={{ color: "#A9B29C", fontFamily: "IBM Plex Mono, monospace" }}>Species</h2>
-        <SpeciesChips species={species}
-          isSelected={(s) => selectedIds.includes(s.id)}
-          onTap={(s) => onToggleSpecies(s.id)}
-          hint="Tap to select — select several species to see where their care windows overlap." />
-      </div>
+      {/* species picker (multi-select) */}
+      {species.length > 0 && (
+        <div className="px-5 pt-5">
+          <h2 className="text-[12px] tracking-wide uppercase mb-2" style={{ color: "#A9B29C", fontFamily: "IBM Plex Mono, monospace" }}>Species</h2>
+          <SpeciesPicker species={species} mode="multi"
+            selectedIds={selectedIds}
+            onToggle={onToggleSpecies}
+            onSelectAll={onSelectAllSpecies} onClearAll={onClearSpecies}
+            hint="Select several species to see where their care windows overlap." />
+        </div>
+      )}
 
       {species.length === 0 && (
         <p className="px-5 pt-6 text-sm" style={{ color: "#A9B29C" }}>

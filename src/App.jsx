@@ -46,6 +46,8 @@ export default function App() {
   const toggleWheelSpecies = (id) => {
     setWheelSelection((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   };
+  const selectAllWheelSpecies = () => setWheelSelection(species.map((s) => s.id));
+  const clearWheelSelection = () => setWheelSelection([]);
   const toggleWheelCat = (c) => {
     setWheelCats((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
   };
@@ -183,6 +185,7 @@ export default function App() {
       {activeTab.path === "/wheel" ? (
         <Wheel data={data}
           selectedIds={wheelSelection} onToggleSpecies={toggleWheelSpecies}
+          onSelectAllSpecies={selectAllWheelSpecies} onClearSpecies={clearWheelSelection}
           enabledCats={wheelCats} onToggleCat={toggleWheelCat} />
       ) : activeTab.path === "/collection" ? (
         <Collection data={data} actions={actions} />
