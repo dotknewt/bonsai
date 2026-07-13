@@ -8,6 +8,9 @@ export const KEYS = {
   specimens: "bonsai-specimens",
 };
 
+/* Key into the completions blob stored under KEYS.completions. */
+export const completionKey = (speciesId, taskId, year) => `${speciesId}:${taskId}:${year}`;
+
 /* ---------- storage helpers (localStorage) ---------- */
 export async function loadJSON(key, fallback) {
   try {

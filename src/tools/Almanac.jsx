@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Check, Sprout } from "lucide-react";
 import { CATS } from "../lib/categories.js";
 import { seasonLabel, windowStatus, fmtDate, fmtWindow, daysUntilText, sortTasksByStart } from "../lib/dates.js";
+import { completionKey } from "../lib/storage.js";
 import { Badge, EmptyBench } from "../components/ui.jsx";
 import SpeciesPicker from "../components/SpeciesPicker.jsx";
 import TaskDetailModal from "../components/TaskDetailModal.jsx";
@@ -23,7 +24,7 @@ export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
     const rows = [];
     species.forEach((s) => s.tasks.forEach((t) => {
       const st = windowStatus(t);
-      rows.push({ speciesId: s.id, speciesName: s.name, task: t, ...st, done: !!completions[`${s.id}:${t.id}:${year}`] });
+      rows.push({ speciesId: s.id, speciesName: s.name, task: t, ...st, done: !!completions[completionKey(s.id, t.id, year)] });
     }));
     return {
       open: rows.filter((r) => r.open).sort((a, b) => a.end - b.end),          // closing soonest first
@@ -134,7 +135,7 @@ export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
 
           <div className="mt-4 space-y-2">
             {activeTasks.map((t) => {
-              const done = !!completions[`${active.id}:${t.id}:${year}`];
+              const done = !!completions[completionKey(active.id, t.id, year)];
               const st = windowStatus(t);
               const catColor = (CATS[t.category] || CATS.other).color;
               return (
@@ -177,7 +178,7 @@ export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
           speciesName={detailSpecies.name}
           trees={treeNames(taskDetail.speciesId)}
           year={year}
-          done={!!completions[`${taskDetail.speciesId}:${taskDetail.task.id}:${year}`]}
+          done={!!completions[completionKey(taskDetail.speciesId, taskDetail.task.id, year)]}
           onToggleDone={() => actions.toggleDone(taskDetail.speciesId, taskDetail.task.id)}
           onClose={() => setTaskDetail(null)} />
       )}
