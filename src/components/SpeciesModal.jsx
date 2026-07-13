@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Upload, BookOpen } from "lucide-react";
 import ModalShell, { inputStyle, SubmitButton } from "./ModalShell.jsx";
+import { parseJSON, looksLikeSpecies, normalizeSpeciesShape } from "../lib/importParsing.js";
 import FormatGuide from "../FormatGuide.jsx";
 
 export default function AddSpeciesModal({ onClose, onAdd }) {
@@ -17,20 +18,20 @@ export default function AddSpeciesModal({ onClose, onAdd }) {
       onAdd([{ name: name.trim(), botanicalName: botanicalName.trim(), tasks: [] }]);
       return;
     }
-    let parsed;
-    try { parsed = JSON.parse(importText); }
-    catch { setError("That doesn't look like valid JSON — check the format and try again."); return; }
+    const { value: parsed, error: parseError } = parseJSON(importText);
+    if (parseError) { setError(parseError); return; }
 
-    if (Array.isArray(parsed) && parsed.length && parsed[0] && typeof parsed[0] === "object" && "tasks" in parsed[0]) {
+    const fallback = { name: name.trim(), botanicalName: botanicalName.trim() };
+    if (Array.isArray(parsed) && parsed.length && looksLikeSpecies(parsed[0])) {
       // a whole exported collection: [{name, botanicalName, tasks}, ...]
-      onAdd(parsed.map((sp) => ({ name: sp.name || "Untitled", botanicalName: sp.botanicalName || "", tasks: sp.tasks || [] })));
+      onAdd(parsed.map((sp) => normalizeSpeciesShape(sp)));
     } else if (Array.isArray(parsed)) {
       // a bare task list — needs the typed name
       if (!name.trim()) { setError("Add a common name above first, then paste a bare task list."); return; }
-      onAdd([{ name: name.trim(), botanicalName: botanicalName.trim(), tasks: parsed }]);
+      onAdd([normalizeSpeciesShape({ tasks: parsed }, fallback)]);
     } else if (parsed && typeof parsed === "object" && "tasks" in parsed) {
       // a single exported species
-      onAdd([{ name: parsed.name || name.trim() || "Untitled", botanicalName: parsed.botanicalName || botanicalName.trim(), tasks: parsed.tasks || [] }]);
+      onAdd([normalizeSpeciesShape(parsed, fallback)]);
     } else {
       setError("Unrecognized format — paste a task list, or an exported species/collection.");
     }

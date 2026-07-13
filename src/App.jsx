@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Loader2, ListChecks, Orbit, Sprout } from "lucide-react";
 import { useHashRoute } from "./hooks/useHashRoute.js";
-import { KEYS, saveJSON, bootstrapData, partitionDuplicateSpecies, speciesNameKey, mergeSpeciesData } from "./lib/storage.js";
+import { KEYS, saveJSON, bootstrapData, partitionDuplicateSpecies, speciesNameKey, mergeSpeciesData, completionKey } from "./lib/storage.js";
 import { normalizeTask } from "./lib/dates.js";
 import { CATS } from "./lib/categories.js";
 import Almanac from "./tools/Almanac.jsx";
@@ -58,7 +58,7 @@ export default function App() {
 
   const year = new Date().getFullYear();
   const toggleDone = (speciesId, taskId) => {
-    const key = `${speciesId}:${taskId}:${year}`;
+    const key = completionKey(speciesId, taskId, year);
     const next = { ...completions, [key]: !completions[key] };
     persistCompletions(next);
   };

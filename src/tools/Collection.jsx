@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Share2, Pencil, ChevronDown, FileUp } from "lucide-react";
 import { seasonLabel, windowStatus, fmtWindow, fmtISODate, sortTasksByStart } from "../lib/dates.js";
-import { toExportObject } from "../lib/storage.js";
+import { toExportObject, completionKey } from "../lib/storage.js";
 import { Badge, ConfirmButton, EmptyBench } from "../components/ui.jsx";
 import AddSpeciesModal, { EditSpeciesModal } from "../components/SpeciesModal.jsx";
 import TaskModal from "../components/TaskModal.jsx";
@@ -9,8 +9,7 @@ import TaskDetailModal from "../components/TaskDetailModal.jsx";
 import ExportModal from "../components/ExportModal.jsx";
 import ImportModal from "../components/ImportModal.jsx";
 import SpecimenModal from "../components/SpecimenModal.jsx";
-
-const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+import { plural } from "../lib/format.js";
 
 /* The data hub: everything in the species store is created, edited and shared
    from here — the Almanac and Wheel only read it. Also home to "my trees",
@@ -205,7 +204,7 @@ export default function Collection({ data, actions }) {
           speciesName={taskDetail.species.name}
           trees={(specimensBySpecies[taskDetail.species.id] || []).map((x) => x.nickname).join(", ")}
           year={year}
-          done={!!completions[`${taskDetail.species.id}:${taskDetail.task.id}:${year}`]}
+          done={!!completions[completionKey(taskDetail.species.id, taskDetail.task.id, year)]}
           onToggleDone={() => actions.toggleDone(taskDetail.species.id, taskDetail.task.id)}
           onEdit={() => { setTaskModal({ speciesId: taskDetail.species.id, task: taskDetail.task }); setTaskDetail(null); }}
           onClose={() => setTaskDetail(null)} />
