@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { CATS } from "../lib/categories.js";
-import { MONTH_LETTERS, angleForMonthDay, windowStatus, fmtWindow } from "../lib/dates.js";
+import { MONTH_LETTERS, angleForMonthDay, windowStatus, fmtWindow, fmtDate } from "../lib/dates.js";
 
 /* ---------- Season Ring (signature visual) ---------- */
 function arcPath(cx, cy, r, startAngle, sweep) {
@@ -169,6 +169,13 @@ export default function SeasonRing({ tasks, overlays = [], size = 260, speciesOr
           </path>
         ))}
         <circle cx={cx} cy={cy} r={2} fill="#EDE6D6" />
+        {!selected && (
+          <text x={cx} y={cy + 15} fontSize={10} fill="#D9A441" textAnchor="middle"
+            fontFamily="IBM Plex Mono, monospace"
+            stroke="#1F2A1C" strokeWidth={3} paintOrder="stroke" aria-hidden="true">
+            {`Today · ${fmtDate(today)}`}
+          </text>
+        )}
         {selected && (
           <foreignObject x={cx - size * 0.3} y={cy - size * 0.21} width={size * 0.6} height={size * 0.42}>
             <div className="w-full h-full flex items-center justify-center">

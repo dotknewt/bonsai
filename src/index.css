@@ -10,11 +10,16 @@ body {
   font-family: "Fraunces", serif;
 }
 
-button,
-select,
+/* No unlayered `button { font: inherit }` here — Tailwind's preflight already
+   does that in @layer base, and an unlayered copy overrides the text-size and
+   font-weight utilities on buttons (unlayered CSS beats @layer utilities). */
+
+/* Form fields stay at ≥16px (deliberately outrunning any text-* utility on
+   them) so iOS Safari doesn't auto-zoom the page when one gains focus. */
 input,
+select,
 textarea {
-  font: inherit;
+  font-size: max(16px, 1em);
 }
 
 :focus-visible {
