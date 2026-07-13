@@ -2,7 +2,8 @@ import React, { useMemo, useState } from "react";
 import { Check, Sprout } from "lucide-react";
 import { CATS } from "../lib/categories.js";
 import { seasonLabel, windowStatus, fmtDate, fmtWindow, daysUntilText, sortTasksByStart } from "../lib/dates.js";
-import { Badge, SpeciesChips, EmptyBench } from "../components/ui.jsx";
+import { Badge, EmptyBench } from "../components/ui.jsx";
+import SpeciesPicker from "../components/SpeciesPicker.jsx";
 import TaskDetailModal from "../components/TaskDetailModal.jsx";
 
 /* The bench dashboard: every upcoming care window across the collection, plus
@@ -99,20 +100,22 @@ export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
         )}
       </div>
 
-      {/* species tabs (single-select) */}
-      <div className="px-5 pt-7">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-[12px] tracking-wide uppercase" style={{ color: "#A9B29C", fontFamily: "IBM Plex Mono, monospace" }}>Species</h2>
-          <button onClick={() => actions.navigate("/collection")}
-            className="flex items-center gap-1 text-[11px]" style={{ color: "#A9B29C" }}>
-            <Sprout size={12} /> Manage collection
-          </button>
+      {/* species picker (single-select) */}
+      {species.length > 0 && (
+        <div className="px-5 pt-7">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-[12px] tracking-wide uppercase" style={{ color: "#A9B29C", fontFamily: "IBM Plex Mono, monospace" }}>Species</h2>
+            <button onClick={() => actions.navigate("/collection")}
+              className="flex items-center gap-1 text-[11px]" style={{ color: "#A9B29C" }}>
+              <Sprout size={12} /> Manage collection
+            </button>
+          </div>
+          <SpeciesPicker species={species} mode="single"
+            selectedIds={active ? [active.id] : []}
+            onPick={onSelectSpecies}
+            hint="Pick a species to see its full care plan for the year." />
         </div>
-        <SpeciesChips species={species}
-          isSelected={(s) => s.id === active?.id}
-          onTap={(s) => onSelectSpecies(s.id)}
-          hint="Tap a species to see its full care plan for the year." />
-      </div>
+      )}
 
       {species.length === 0 && (
         <EmptyBench ctaLabel="Open the Collection" ctaIcon={Sprout} onCta={() => actions.navigate("/collection")} />
