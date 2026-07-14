@@ -9,7 +9,7 @@ vi.mock("../data/seedSpecies.js", () => ({
 
 import {
   loadJSON, saveJSON, speciesNameKey, partitionDuplicateSpecies,
-  mergeSpeciesData, bootstrapData, KEYS,
+  mergeSpeciesData, bootstrapData, pruneCompletionsToYear, KEYS,
 } from "./storage.js";
 
 function makeLocalStorageStub() {
@@ -153,6 +153,22 @@ describe("mergeSpeciesData", () => {
   });
 });
 
+describe("pruneCompletionsToYear", () => {
+  it("keeps only entries whose key ends with the given year", () => {
+    const completions = { "sp1:t1:2024": true, "sp1:t2:2026": true, "sp2:t1:2026": false };
+    expect(pruneCompletionsToYear(completions, 2026)).toEqual({ "sp1:t2:2026": true, "sp2:t1:2026": false });
+  });
+
+  it("returns an empty object when nothing matches", () => {
+    expect(pruneCompletionsToYear({ "sp1:t1:2024": true }, 2026)).toEqual({});
+  });
+
+  it("leaves an already-current blob untouched", () => {
+    const completions = { "sp1:t1:2026": true };
+    expect(pruneCompletionsToYear(completions, 2026)).toEqual(completions);
+  });
+});
+
 describe("bootstrapData", () => {
   it("seeds from SEED_SPECIES on first load, migrating any legacy tasks", async () => {
     const { species } = await bootstrapData();
@@ -175,5 +191,21 @@ describe("bootstrapData", () => {
     await saveJSON(KEYS.seeded, ["seed-1"]); // seed-2 didn't exist yet when this user last seeded
     const { species } = await bootstrapData();
     expect(species.map((s) => s.id).sort()).toEqual(["seed-1", "seed-2"]);
+  });
+
+  it("prunes completions from prior years and persists the pruned blob", async () => {
+    const year = new Date().getFullYear();
+    await saveJSON(KEYS.completions, { [`sp1:t1:${year - 1}`]: true, [`sp1:t2:${year}`]: true });
+    const { completions } = await bootstrapData();
+    expect(completions).toEqual({ [`sp1:t2:${year}`]: true });
+    expect(await loadJSON(KEYS.completions, null)).toEqual({ [`sp1:t2:${year}`]: true });
+  });
+
+  it("does not rewrite storage when completions already only contain the current year", async () => {
+    const year = new Date().getFullYear();
+    await saveJSON(KEYS.completions, { [`sp1:t1:${year}`]: true });
+    const setItemSpy = vi.spyOn(localStorage, "setItem");
+    await bootstrapData();
+    expect(setItemSpy).not.toHaveBeenCalledWith(KEYS.completions, expect.anything());
   });
 });
