@@ -12,6 +12,41 @@ import TaskDetailModal from "../components/TaskDetailModal.jsx";
    adding and editing happens in the Collection tool. */
 const OPEN_CAP = 8;
 const UPCOMING_CAP = 5;
+const COMPLETED_CAP = 5;
+
+/* One row in a species' care plan — shared between the pending list and the
+   Completed section below it. */
+function TaskRow({ task: t, done, onToggleDone, onOpenDetail }) {
+  const st = windowStatus(t);
+  const catColor = (CATS[t.category] || CATS.other).color;
+  return (
+    <div className="rounded-lg px-3 py-2.5"
+      style={{ background: "#26331F", boxShadow: st.open ? "inset 2px 0 0 0 #8FA876" : "none" }}>
+      <div className="flex items-start gap-3">
+        <button onClick={onToggleDone}
+          aria-label={`${done ? "Mark incomplete" : "Mark complete"}: ${t.title}`}
+          className="w-5 h-5 mt-0.5 rounded-full flex items-center justify-center shrink-0 transition"
+          style={{ border: `1.5px solid ${catColor}`, background: done ? catColor : "transparent" }}>
+          {done && <Check size={12} color="#1F2A1C" aria-hidden="true" />}
+        </button>
+        <button onClick={onOpenDetail}
+          className="flex-1 min-w-0 text-left">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[13px]" style={{ opacity: done ? 0.5 : 1, textDecoration: done ? "line-through" : "none" }}>{t.title}</span>
+            <Badge category={t.category} />
+          </div>
+          {/* clamped — the detail modal has the full text */}
+          <p className="text-[12px] mt-1 leading-snug"
+            style={{ color: "#A9B29C", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{t.description}</p>
+          <p className="text-[11px] mt-1" style={{ color: "#6E7A64", fontFamily: "IBM Plex Mono, monospace" }}>
+            {seasonLabel(t.startMonth)} · {fmtWindow(st)}
+            {st.open && <span style={{ color: "#8FA876" }}> · open now</span>}
+          </p>
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
   const { species, completions, specimensBySpecies, year } = data;
@@ -27,23 +62,28 @@ export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
       rows.push({ speciesId: s.id, speciesName: s.name, task: t, ...st, done: !!completions[completionKey(s.id, t.id, year)] });
     }));
     return {
-      open: rows.filter((r) => r.open).sort((a, b) => a.end - b.end),          // closing soonest first
-      upcoming: rows.filter((r) => !r.open).sort((a, b) => a.start - b.start),
+      open: rows.filter((r) => r.open && !r.done).sort((a, b) => a.end - b.end),          // closing soonest first
+      upcoming: rows.filter((r) => !r.open && !r.done).sort((a, b) => a.start - b.start),
+      // no completion timestamp exists to sort by "recently done" — alphabetical instead
+      completed: rows.filter((r) => r.done).sort((a, b) => a.speciesName.localeCompare(b.speciesName) || a.task.title.localeCompare(b.task.title)),
     };
   }, [species, completions, year]);
 
   const benchGroups = [
     { label: "Open now", rows: showAllBench ? bench.open : bench.open.slice(0, OPEN_CAP) },
     { label: "Coming up", rows: showAllBench ? bench.upcoming : bench.upcoming.slice(0, UPCOMING_CAP) },
+    { label: "Completed", rows: showAllBench ? bench.completed : bench.completed.slice(0, COMPLETED_CAP) },
   ].filter((g) => g.rows.length > 0);
-  const benchTotal = bench.open.length + bench.upcoming.length;
-  const benchCollapsedCount = Math.min(bench.open.length, OPEN_CAP) + Math.min(bench.upcoming.length, UPCOMING_CAP);
+  const benchTotal = bench.open.length + bench.upcoming.length + bench.completed.length;
+  const benchCollapsedCount = Math.min(bench.open.length, OPEN_CAP) + Math.min(bench.upcoming.length, UPCOMING_CAP) + Math.min(bench.completed.length, COMPLETED_CAP);
 
   // a stale id (species deleted in the Collection) falls back to the first
   const active = species.find((s) => s.id === activeId) ?? species[0] ?? null;
   const detailSpecies = taskDetail ? species.find((s) => s.id === taskDetail.speciesId) : null;
   const activeTasks = active ? sortTasksByStart(active.tasks) : [];
   const activeTrees = active ? treeNames(active.id) : "";
+  const pendingTasks = active ? activeTasks.filter((t) => !completions[completionKey(active.id, t.id, year)]) : [];
+  const completedTasks = active ? activeTasks.filter((t) => completions[completionKey(active.id, t.id, year)]) : [];
 
   return (
     <>
@@ -56,7 +96,7 @@ export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
           <>
             {benchGroups.map((g) => (
               <div key={g.label} className="mb-3">
-                <h3 className="text-[11px] tracking-wide uppercase mb-1.5" style={{ color: g.label === "Open now" ? "#8FA876" : "#8A9483", fontFamily: "IBM Plex Mono, monospace" }}>{g.label}</h3>
+                <h3 className="text-[11px] tracking-wide uppercase mb-1.5" style={{ color: g.label === "Open now" ? "#8FA876" : g.label === "Completed" ? "#6E7A64" : "#8A9483", fontFamily: "IBM Plex Mono, monospace" }}>{g.label}</h3>
                 <div className="space-y-1.5">
                   {g.rows.map((row) => {
                     const meta = CATS[row.task.category] || CATS.other;
@@ -134,42 +174,28 @@ export default function Almanac({ data, actions, activeId, onSelectSpecies }) {
           </div>
 
           <div className="mt-4 space-y-2">
-            {activeTasks.map((t) => {
-              const done = !!completions[completionKey(active.id, t.id, year)];
-              const st = windowStatus(t);
-              const catColor = (CATS[t.category] || CATS.other).color;
-              return (
-                <div key={t.id} className="rounded-lg px-3 py-2.5"
-                  style={{ background: "#26331F", boxShadow: st.open ? "inset 2px 0 0 0 #8FA876" : "none" }}>
-                  <div className="flex items-start gap-3">
-                    <button onClick={() => actions.toggleDone(active.id, t.id)}
-                      aria-label={`${done ? "Mark incomplete" : "Mark complete"}: ${t.title}`}
-                      className="w-5 h-5 mt-0.5 rounded-full flex items-center justify-center shrink-0 transition"
-                      style={{ border: `1.5px solid ${catColor}`, background: done ? catColor : "transparent" }}>
-                      {done && <Check size={12} color="#1F2A1C" aria-hidden="true" />}
-                    </button>
-                    <button onClick={() => setTaskDetail({ speciesId: active.id, task: t })}
-                      className="flex-1 min-w-0 text-left">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[13px]" style={{ opacity: done ? 0.5 : 1, textDecoration: done ? "line-through" : "none" }}>{t.title}</span>
-                        <Badge category={t.category} />
-                      </div>
-                      {/* clamped — the detail modal has the full text */}
-                      <p className="text-[12px] mt-1 leading-snug"
-                        style={{ color: "#A9B29C", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{t.description}</p>
-                      <p className="text-[11px] mt-1" style={{ color: "#6E7A64", fontFamily: "IBM Plex Mono, monospace" }}>
-                        {seasonLabel(t.startMonth)} · {fmtWindow(st)}
-                        {st.open && <span style={{ color: "#8FA876" }}> · open now</span>}
-                      </p>
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+            {pendingTasks.map((t) => (
+              <TaskRow key={t.id} task={t} done={false}
+                onToggleDone={() => actions.toggleDone(active.id, t.id)}
+                onOpenDetail={() => setTaskDetail({ speciesId: active.id, task: t })} />
+            ))}
             {activeTasks.length === 0 && (
               <p className="text-sm" style={{ color: "#A9B29C" }}>No care tasks yet — add some in the Collection.</p>
             )}
           </div>
+
+          {completedTasks.length > 0 && (
+            <div className="mt-5">
+              <h3 className="text-[11px] tracking-wide uppercase mb-1.5" style={{ color: "#6E7A64", fontFamily: "IBM Plex Mono, monospace" }}>Completed</h3>
+              <div className="space-y-2">
+                {completedTasks.map((t) => (
+                  <TaskRow key={t.id} task={t} done={true}
+                    onToggleDone={() => actions.toggleDone(active.id, t.id)}
+                    onOpenDetail={() => setTaskDetail({ speciesId: active.id, task: t })} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

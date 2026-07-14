@@ -11,6 +11,13 @@ export const KEYS = {
 /* Key into the completions blob stored under KEYS.completions. */
 export const completionKey = (speciesId, taskId, year) => `${speciesId}:${taskId}:${year}`;
 
+/* Drop completion entries from years other than `year` so the blob doesn't
+   grow forever — nothing in the UI ever reads a prior year's entries anyway. */
+export function pruneCompletionsToYear(completions, year) {
+  const suffix = `:${year}`;
+  return Object.fromEntries(Object.entries(completions).filter(([k]) => k.endsWith(suffix)));
+}
+
 /* ---------- storage helpers (localStorage) ---------- */
 export async function loadJSON(key, fallback) {
   try {
@@ -93,6 +100,10 @@ export async function bootstrapData() {
   sp = sp.map((s) => ({ ...s, tasks: (s.tasks || []).map(normalizeTask) }));
   await saveJSON(KEYS.species, sp);
   const completions = await loadJSON(KEYS.completions, {});
+  const prunedCompletions = pruneCompletionsToYear(completions, new Date().getFullYear());
+  if (Object.keys(prunedCompletions).length !== Object.keys(completions).length) {
+    await saveJSON(KEYS.completions, prunedCompletions);
+  }
   const specimens = await loadJSON(KEYS.specimens, []);
-  return { species: sp, completions, specimens };
+  return { species: sp, completions: prunedCompletions, specimens };
 }
